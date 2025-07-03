@@ -8,34 +8,8 @@ import { Separator } from "~/components/ui/separator"
 import { Input } from "~/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { ScrollArea } from "~/components/ui/scroll-area"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from "~/components/ui/sidebar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu"
-import { 
-  Bell,
-  Settings,
-  Home,
-  FileText,
-  ExternalLink
-} from "lucide-react"
+import { AppLayout } from "~/components/shared/app-layout"
+import { ExternalLink } from "lucide-react"
 import { useState, useEffect } from "react"
 
 export default function Dashboard() {
@@ -469,115 +443,23 @@ export class ${className} extends cdk.Stack {
     })
   }
 
-  const sidebarItems = [
-    { id: "dashboard", label: "Project", icon: Home },
-    { id: "projects", label: "All Projects", icon: FileText },
-  ]
+  const clearSavedDataAction = (
+    <Button 
+      variant="default"
+      onClick={clearSavedData}
+      className="flex items-center space-x-2"
+    >
+      <span>+</span>
+      <span>New Project</span>
+    </Button>
+  )
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <Sidebar collapsible="icon">
-          <SidebarHeader>
-            <div className="flex items-center space-x-2 px-3 py-2">
-              <Avatar className="h-8 w-8 bg-blue-600">
-                <AvatarFallback className="bg-blue-600 text-white font-bold text-sm">CS</AvatarFallback>
-              </Avatar>
-              <span className="font-bold text-lg">CreateStack</span>
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {sidebarItems.map((item) => {
-                    const Icon = item.icon
-                    return (
-                      <SidebarMenuItem key={item.id}>
-                        <SidebarMenuButton
-                          onClick={() => {
-                            if (item.id === "projects") {
-                              window.location.href = "/projects";
-                            } else {
-                              setActiveTab(item.id);
-                            }
-                          }}
-                          isActive={activeTab === item.id}
-                        >
-                          <Icon className="h-4 w-4" />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    )
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-          <SidebarFooter>
-            <div className="flex items-center space-x-3 px-3 py-2">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">John Doe</p>
-                <p className="text-xs text-muted-foreground truncate">john@example.com</p>
-              </div>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
-
-        <SidebarInset>
-          {/* Header */}
-          <div className="bg-background border-b px-4 py-3 lg:px-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Project</h1>
-                  <p className="text-sm text-muted-foreground">Welcome back! Here's what's happening.</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button 
-                  variant="default"
-                  onClick={clearSavedData}
-                  className="flex items-center space-x-2"
-                >
-                  <span>+</span>
-                  <span>New Project</span>
-                </Button>
-                <Button variant="outline" size="icon">
-                  <Bell className="h-4 w-4" />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      Account Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      Project Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      Export Data
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      Clear All Data
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </div>
-
-          {/* Content Area */}
-          <div className="flex-1 overflow-auto p-4 lg:p-6">
+    <AppLayout 
+      title="Project" 
+      description="Welcome back! Here's what's happening."
+      headerActions={clearSavedDataAction}
+    >
             {/* Code Hosting Card */}
             <div className="mb-6">
               <Card className="max-w-2xl">
@@ -768,9 +650,6 @@ export class ${className} extends cdk.Stack {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </SidebarInset>
-    </div>
-  </SidebarProvider>
+    </AppLayout>
   )
 }
