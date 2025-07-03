@@ -28,14 +28,106 @@ import {
   Github,
   ExternalLink
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const [activeTab, setActiveTab] = useState("project")
   const [projectName, setProjectName] = useState("")
   const [selectedPlatform, setSelectedPlatform] = useState("github")
   const [showIaC, setShowIaC] = useState(false)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedProjectName = localStorage.getItem('createstack-project-name')
+    const savedPlatform = localStorage.getItem('createstack-selected-platform')
+    
+    if (savedProjectName) {
+      setProjectName(savedProjectName)
+    }
+    
+    if (savedPlatform) {
+      setSelectedPlatform(savedPlatform)
+    }
+    
+    // Set initial last saved time if data exists
+    if (savedProjectName || savedPlatform) {
+      const savedTime = localStorage.getItem('createstack-last-saved')
+      if (savedTime) {
+        setLastSaved(new Date(savedTime))
+      }
+    }
+  }, [])
+
+  // Autosave project name
+  useEffect(() => {
+    if (projectName.trim()) {
+      setIsSaving(true)
+    }
+    
+    const saveTimer = setTimeout(() => {
+      if (projectName.trim()) {
+        localStorage.setItem('createstack-project-name', projectName)
+        localStorage.setItem('createstack-last-saved', new Date().toISOString())
+        setLastSaved(new Date())
+        setIsSaving(false)
+      } else {
+        localStorage.removeItem('createstack-project-name')
+        setIsSaving(false)
+      }
+    }, 1000) // Save after 1 second of inactivity
+
+    return () => {
+      clearTimeout(saveTimer)
+      if (!projectName.trim()) {
+        setIsSaving(false)
+      }
+    }
+  }, [projectName])
+
+  // Autosave selected platform
+  useEffect(() => {
+    setIsSaving(true)
+    const saveTimer = setTimeout(() => {
+      localStorage.setItem('createstack-selected-platform', selectedPlatform)
+      localStorage.setItem('createstack-last-saved', new Date().toISOString())
+      setLastSaved(new Date())
+      setIsSaving(false)
+    }, 100) // Quick save for platform changes
+
+    return () => clearTimeout(saveTimer)
+  }, [selectedPlatform])
+
+  // Clear saved data function
+  const clearSavedData = () => {
+    localStorage.removeItem('createstack-project-name')
+    localStorage.removeItem('createstack-selected-platform')
+    localStorage.removeItem('createstack-last-saved')
+    setProjectName("")
+    setSelectedPlatform("github")
+    setLastSaved(null)
+    setIsSaving(false)
+  }
+
+  // Format last saved time
+  const formatLastSaved = (date: Date) => {
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMinutes = Math.floor(diffMs / 60000)
+    
+    if (diffMinutes < 1) {
+      return "just now"
+    } else if (diffMinutes < 60) {
+      return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`
+    } else if (diffMinutes < 1440) {
+      const diffHours = Math.floor(diffMinutes / 60)
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+    } else {
+      return date.toLocaleDateString()
+    }
+  }
 
   const platforms = [
     {
@@ -356,7 +448,7 @@ export class ${className} extends cdk.Stack {
   }
 
   const sidebarItems = [
-    { id: "dashboard", label: "Dashboard", icon: Home },
+    { id: "dashboard", label: "Project", icon: Home },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "reports", label: "Reports", icon: FileText },
     { id: "calendar", label: "Calendar", icon: Calendar },
@@ -446,7 +538,7 @@ export class ${className} extends cdk.Stack {
                 <Menu className="h-4 w-4" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+                <h1 className="text-2xl font-bold tracking-tight">Project</h1>
                 <p className="text-sm text-muted-foreground">Welcome back! Here's what's happening.</p>
               </div>
             </div>
@@ -468,9 +560,25 @@ export class ${className} extends cdk.Stack {
                 <CardTitle className="flex items-center space-x-2">
                   <span className="text-xl">{platforms.find(p => p.id === selectedPlatform)?.emoji}</span>
                   <span>Code Hosting</span>
+                  {isSaving && (
+                    <div className="flex items-center space-x-1 ml-auto">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                      <span className="text-xs text-muted-foreground font-normal">Saving...</span>
+                    </div>
+                  )}
                 </CardTitle>
-                <CardDescription>
-                  Create a new repository for your project on your preferred platform
+                <CardDescription className="flex items-center justify-between">
+                  <span>Create a new repository for your project on your preferred platform</span>
+                  {(projectName.trim() || selectedPlatform !== "github") && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSavedData}
+                      className="text-xs h-6 px-2"
+                    >
+                      Clear All
+                    </Button>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
