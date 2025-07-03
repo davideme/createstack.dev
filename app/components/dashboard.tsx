@@ -543,6 +543,14 @@ export class ${className} extends cdk.Stack {
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              <Button 
+                variant="default"
+                onClick={clearSavedData}
+                className="flex items-center space-x-2"
+              >
+                <span>+</span>
+                <span>New Project</span>
+              </Button>
               <Button variant="outline" size="icon">
                 <Bell className="h-4 w-4" />
               </Button>
