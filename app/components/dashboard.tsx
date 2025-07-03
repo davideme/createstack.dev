@@ -1058,17 +1058,17 @@ ${getComplianceDetails(selectedPlatform)}`
                 {projectName.trim() && (
                   <div className="space-y-2 border-t pt-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-medium">📊 Vendor Comparison Matrix</h4>
+                      <h4 className="text-sm font-medium">📊 Vendor Entry</h4>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => copyToClipboard(generateVendorComparison())}
                       >
-                        Copy for Excel/Sheets
+                        Copy Vendor Row
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Ready-to-paste vendor comparison table for spreadsheet analysis
+                      Single vendor entry ready for your evaluation spreadsheet
                     </p>
                   </div>
                 )}
