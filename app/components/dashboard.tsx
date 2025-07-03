@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { Separator } from "~/components/ui/separator"
 import { Input } from "~/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
+import { ScrollArea } from "~/components/ui/scroll-area"
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +22,13 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu"
 import { 
   BarChart3, 
   TrendingUp, 
@@ -493,9 +501,9 @@ export class ${className} extends cdk.Stack {
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <div className="flex items-center space-x-2 px-3 py-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">CS</span>
-              </div>
+              <Avatar className="h-8 w-8 bg-blue-600">
+                <AvatarFallback className="bg-blue-600 text-white font-bold text-sm">CS</AvatarFallback>
+              </Avatar>
               <span className="font-bold text-lg">CreateStack</span>
             </div>
           </SidebarHeader>
@@ -563,9 +571,28 @@ export class ${className} extends cdk.Stack {
                 <Button variant="outline" size="icon">
                   <Bell className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon">
-                  <Settings className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>
+                      Account Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      Project Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      Export Data
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      Clear All Data
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>
@@ -696,9 +723,11 @@ export class ${className} extends cdk.Stack {
                             Copy Code
                           </Button>
                         </div>
-                        <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-64">
-                          <code>{generateTerraformCode()}</code>
-                        </pre>
+                        <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
+                          <pre className="p-3 text-xs">
+                            <code>{generateTerraformCode()}</code>
+                          </pre>
+                        </ScrollArea>
                       </TabsContent>
                       
                       <TabsContent value="pulumi" className="space-y-2">
@@ -712,9 +741,11 @@ export class ${className} extends cdk.Stack {
                             Copy Code
                           </Button>
                         </div>
-                        <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-64">
-                          <code>{generatePulumiCode()}</code>
-                        </pre>
+                        <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
+                          <pre className="p-3 text-xs">
+                            <code>{generatePulumiCode()}</code>
+                          </pre>
+                        </ScrollArea>
                       </TabsContent>
                       
                       <TabsContent value="cdk" className="space-y-2">
@@ -728,9 +759,11 @@ export class ${className} extends cdk.Stack {
                             Copy Code
                           </Button>
                         </div>
-                        <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-64">
-                          <code>{generateCDKCode()}</code>
-                        </pre>
+                        <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
+                          <pre className="p-3 text-xs">
+                            <code>{generateCDKCode()}</code>
+                          </pre>
+                        </ScrollArea>
                       </TabsContent>
                       
                       <TabsContent value="cloudformation" className="space-y-2">
@@ -744,9 +777,11 @@ export class ${className} extends cdk.Stack {
                             Copy Code
                           </Button>
                         </div>
-                        <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-64">
-                          <code>{generateCloudFormationCode()}</code>
-                        </pre>
+                        <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
+                          <pre className="p-3 text-xs">
+                            <code>{generateCloudFormationCode()}</code>
+                          </pre>
+                        </ScrollArea>
                       </TabsContent>
                     </Tabs>
                   </div>
