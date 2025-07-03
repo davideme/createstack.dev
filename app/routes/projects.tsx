@@ -36,11 +36,6 @@ import {
   Settings,
   Home,
   FileText,
-  BarChart3,
-  Mail,
-  ShoppingCart,
-  CreditCard,
-  User,
   Bell
 } from "lucide-react";
 import { Input } from "~/components/ui/input";
@@ -194,12 +189,6 @@ export default function Projects() {
   const sidebarItems = [
     { id: "dashboard", label: "Project", icon: Home },
     { id: "projects", label: "All Projects", icon: FileText },
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
-    { id: "reports", label: "Reports", icon: FileText },
-    { id: "mail", label: "Mail", icon: Mail },
-    { id: "orders", label: "Orders", icon: ShoppingCart },
-    { id: "billing", label: "Billing", icon: CreditCard },
-    { id: "customers", label: "Customers", icon: User },
   ];
 
   return (

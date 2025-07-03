@@ -30,24 +30,10 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
 import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
-  Activity,
   Bell,
   Settings,
   Home,
   FileText,
-  PieChart,
-  Calendar,
-  Mail,
-  ShoppingCart,
-  CreditCard,
-  User,
-  Menu,
-  X,
-  Github,
   ExternalLink
 } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -486,13 +472,6 @@ export class ${className} extends cdk.Stack {
   const sidebarItems = [
     { id: "dashboard", label: "Project", icon: Home },
     { id: "projects", label: "All Projects", icon: FileText },
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
-    { id: "reports", label: "Reports", icon: FileText },
-    { id: "calendar", label: "Calendar", icon: Calendar },
-    { id: "mail", label: "Mail", icon: Mail },
-    { id: "orders", label: "Orders", icon: ShoppingCart },
-    { id: "billing", label: "Billing", icon: CreditCard },
-    { id: "customers", label: "Customers", icon: User },
   ]
 
   return (
