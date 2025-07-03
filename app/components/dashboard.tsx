@@ -192,6 +192,21 @@ export default function Dashboard() {
     if (projectName.trim()) {
       const platform = platforms.find(p => p.id === selectedPlatform)
       if (platform) {
+        // Save project to localStorage before creating repository
+        const newProject = {
+          id: Date.now().toString(),
+          name: projectName.trim(),
+          platform: selectedPlatform,
+          createdAt: new Date(),
+          lastModified: new Date(),
+          status: 'active' as const,
+          repositoryUrl: undefined // Will be set after repository creation
+        };
+
+        const existingProjects = JSON.parse(localStorage.getItem('createstack-projects') || '[]');
+        const updatedProjects = [...existingProjects, newProject];
+        localStorage.setItem('createstack-projects', JSON.stringify(updatedProjects));
+
         if (platform.id === "gitea") {
           alert("Gitea/Gogs requires self-hosting. Please visit your self-hosted instance to create a repository.")
           return
@@ -449,6 +464,7 @@ export class ${className} extends cdk.Stack {
 
   const sidebarItems = [
     { id: "dashboard", label: "Project", icon: Home },
+    { id: "projects", label: "All Projects", icon: FileText },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "reports", label: "Reports", icon: FileText },
     { id: "calendar", label: "Calendar", icon: Calendar },
@@ -486,7 +502,13 @@ export class ${className} extends cdk.Stack {
               return (
                 <li key={item.id}>
                   <button
-                    onClick={() => setActiveTab(item.id)}
+                    onClick={() => {
+                      if (item.id === "projects") {
+                        window.location.href = "/projects";
+                      } else {
+                        setActiveTab(item.id);
+                      }
+                    }}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                       activeTab === item.id
                         ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'

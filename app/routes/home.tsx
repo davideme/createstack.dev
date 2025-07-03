@@ -3,8 +3,8 @@ import Dashboard from "../components/dashboard";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Dashboard - CreateStack" },
-    { name: "description", content: "Modern dashboard built with shadcn/ui" },
+    { title: "Project - CreateStack" },
+    { name: "description", content: "Modern project creation dashboard built with shadcn/ui" },
   ];
 }
 
