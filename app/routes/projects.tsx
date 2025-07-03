@@ -1,21 +1,29 @@
 import type { Route } from "./+types/projects";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { AppLayout } from "~/components/shared/app-layout";
+import { DataTable } from "~/components/ui/data-table";
 import { 
   Calendar,
   Clock,
   ExternalLink,
   GitBranch,
   Plus,
-  Search,
   Trash2,
-  Settings
+  Settings,
+  ArrowUpDown,
+  MoreHorizontal
 } from "lucide-react";
-import { Input } from "~/components/ui/input";
 import { useState, useEffect } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -36,8 +44,6 @@ interface Project {
 
 export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
 
   // Load projects from localStorage on mount
   useEffect(() => {
@@ -96,19 +102,6 @@ export default function Projects() {
     }
   }, []);
 
-  // Filter projects based on search term
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = projects.filter(project =>
-        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.platform.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredProjects(filtered);
-    } else {
-      setFilteredProjects(projects);
-    }
-  }, [projects, searchTerm]);
-
   const platformEmojis: Record<string, string> = {
     github: '🐙',
     gitlab: '🦊',
@@ -161,6 +154,180 @@ export default function Projects() {
     window.location.href = '/';
   };
 
+  const columns: ColumnDef<Project>[] = [
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Project Name
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) => {
+        const project = row.original;
+        return (
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">
+              {platformEmojis[project.platform] || '📁'}
+            </span>
+            <div>
+              <div className="font-medium">{project.name}</div>
+              <div className="text-sm text-muted-foreground capitalize">
+                {project.platform}
+              </div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Status
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string;
+        return (
+          <Badge 
+            variant="secondary" 
+            className={`text-xs ${statusColors[status]}`}
+          >
+            {status}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <Calendar className="mr-2 h-4 w-4" />
+            Created
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) => {
+        const date = row.getValue("createdAt") as Date;
+        return (
+          <div className="text-sm">
+            {formatDate(date)}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "lastModified",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <Clock className="mr-2 h-4 w-4" />
+            Last Updated
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) => {
+        const date = row.getValue("lastModified") as Date;
+        return (
+          <div className="text-sm text-muted-foreground">
+            {getRelativeTime(date)}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "repositoryUrl",
+      header: "Repository",
+      cell: ({ row }) => {
+        const project = row.original;
+        return (
+          <div>
+            {project.repositoryUrl ? (
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => window.open(project.repositoryUrl, '_blank')}
+                className="flex items-center space-x-1"
+              >
+                <ExternalLink className="h-3 w-3" />
+                <span>View Repo</span>
+              </Button>
+            ) : (
+              <Button 
+                size="sm" 
+                variant="outline"
+                disabled
+                className="flex items-center space-x-1"
+              >
+                <GitBranch className="h-3 w-3" />
+                <span>Draft</span>
+              </Button>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const project = row.original;
+ 
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(project.id)}
+              >
+                Copy project ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                Edit project
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => deleteProject(project.id)}
+                className="text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete project
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    },
+  ];
+
   const newProjectAction = (
     <Button 
       onClick={navigateToHome}
@@ -177,130 +344,7 @@ export default function Projects() {
       description="Manage and organize all your development projects"
       headerActions={newProjectAction}
     >
-      {/* Search and Filters */}
-      <div className="mb-6">
-        <div className="flex items-center space-x-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search projects..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <span>{filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Projects Grid */}
-      {filteredProjects.length === 0 ? (
-        <div className="text-center py-12">
-          <Avatar className="mx-auto w-24 h-24 mb-4">
-            <AvatarFallback className="bg-muted">
-              <GitBranch className="h-12 w-12 text-muted-foreground" />
-            </AvatarFallback>
-          </Avatar>
-          <h3 className="text-lg font-medium mb-2">
-            {searchTerm ? 'No projects found' : 'No projects yet'}
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {searchTerm 
-              ? 'Try adjusting your search terms'
-              : 'Get started by creating your first project'
-            }
-          </p>
-          {!searchTerm && (
-            <Button onClick={navigateToHome}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Project
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProjects.map((project) => (
-            <Card key={project.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">
-                      {platformEmojis[project.platform] || '📁'}
-                    </span>
-                    <div>
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
-                      <CardDescription className="flex items-center space-x-2 mt-1">
-                        <span className="capitalize">{project.platform}</span>
-                        <Badge 
-                          variant="secondary" 
-                          className={`text-xs ${statusColors[project.status]}`}
-                        >
-                          {project.status}
-                        </Badge>
-                      </CardDescription>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>Created {formatDate(project.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4" />
-                    <span>Updated {getRelativeTime(project.lastModified)}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center space-x-2">
-                    {project.repositoryUrl ? (
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => window.open(project.repositoryUrl, '_blank')}
-                        className="flex items-center space-x-1"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        <span>View Repo</span>
-                      </Button>
-                    ) : (
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        disabled
-                        className="flex items-center space-x-1"
-                      >
-                        <GitBranch className="h-3 w-3" />
-                        <span>Draft</span>
-                      </Button>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center space-x-1">
-                    <Button size="sm" variant="ghost">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="ghost"
-                      onClick={() => deleteProject(project.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <DataTable columns={columns} data={projects} />
     </AppLayout>
   );
 }
