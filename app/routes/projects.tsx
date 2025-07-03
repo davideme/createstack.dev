@@ -4,6 +4,20 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Separator } from "~/components/ui/separator";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "~/components/ui/sidebar";
 import { 
   Calendar,
   Clock,
@@ -20,8 +34,6 @@ import {
   ShoppingCart,
   CreditCard,
   User,
-  Menu,
-  X,
   Bell
 } from "lucide-react";
 import { Input } from "~/components/ui/input";
@@ -48,7 +60,6 @@ export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("projects");
 
   // Load projects from localStorage on mount
@@ -185,138 +196,112 @@ export default function Projects() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50/40">
-      {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">CS</span>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <Sidebar collapsible="icon">
+          <SidebarHeader>
+            <div className="flex items-center space-x-2 px-3 py-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">CS</span>
+              </div>
+              <span className="font-bold text-lg">CreateStack</span>
             </div>
-            <span className="font-bold text-lg">CreateStack</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-        
-        <nav className="p-4">
-          <ul className="space-y-2">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <li key={item.id}>
-                  <button
-                    onClick={() => {
-                      if (item.id === "dashboard") {
-                        window.location.href = "/";
-                      } else if (item.id === "projects") {
-                        setActiveTab(item.id);
-                      } else {
-                        setActiveTab(item.id);
-                      }
-                    }}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      activeTab === item.id
-                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
-        
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">John Doe</p>
-              <p className="text-xs text-gray-500 truncate">john@example.com</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b px-4 py-3 lg:px-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
-                <p className="text-sm text-muted-foreground">Manage and organize all your development projects</p>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {sidebarItems.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton
+                          onClick={() => {
+                            if (item.id === "dashboard") {
+                              window.location.href = "/";
+                            } else if (item.id === "projects") {
+                              setActiveTab(item.id);
+                            } else {
+                              setActiveTab(item.id);
+                            }
+                          }}
+                          isActive={activeTab === item.id}
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+          <SidebarFooter>
+            <div className="flex items-center space-x-3 px-3 py-2">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback>JD</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">John Doe</p>
+                <p className="text-xs text-muted-foreground truncate">john@example.com</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button 
-                onClick={navigateToHome}
-                className="flex items-center space-x-2"
-              >
-                <Plus className="h-4 w-4" />
-                <span>New Project</span>
-              </Button>
-              <Button variant="outline" size="icon">
-                <Bell className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
+          </SidebarFooter>
+        </Sidebar>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-auto p-4 lg:p-6">
-          {/* Search and Filters */}
-          <div className="mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search projects..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+        <SidebarInset>
+          {/* Header */}
+          <div className="bg-background border-b px-4 py-3 lg:px-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
+                  <p className="text-sm text-muted-foreground">Manage and organize all your development projects</p>
+                </div>
               </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <span>{filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}</span>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  onClick={navigateToHome}
+                  className="flex items-center space-x-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>New Project</span>
+                </Button>
+                <Button variant="outline" size="icon">
+                  <Bell className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon">
+                  <Settings className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
 
-          {/* Projects Grid */}
-          {filteredProjects.length === 0 ? (
-            <div className="text-center py-12">
+          {/* Content Area */}
+          <div className="flex-1 overflow-auto p-4 lg:p-6">
+            {/* Search and Filters */}
+            <div className="mb-6">
+              <div className="flex items-center space-x-4">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search projects..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <span>{filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Projects Grid */}
+            {filteredProjects.length === 0 ? (
+              <div className="text-center py-12">
               <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <GitBranch className="h-12 w-12 text-gray-400" />
               </div>
@@ -419,7 +404,8 @@ export default function Projects() {
             </div>
           )}
         </div>
-      </div>
+      </SidebarInset>
     </div>
+  </SidebarProvider>
   );
 }
