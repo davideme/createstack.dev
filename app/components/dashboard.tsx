@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { Progress } from "~/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { Separator } from "~/components/ui/separator"
+import { Input } from "~/components/ui/input"
 import { 
   BarChart3, 
   TrendingUp, 
@@ -22,13 +23,16 @@ import {
   CreditCard,
   User,
   Menu,
-  X
+  X,
+  Github,
+  ExternalLink
 } from "lucide-react"
 import { useState } from "react"
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("dashboard")
+  const [projectName, setProjectName] = useState("")
 
   const sidebarItems = [
     { id: "dashboard", label: "Dashboard", icon: Home },
@@ -134,170 +138,48 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
-        </div>
-
-        {/* Content Area */}
+        </div>        {/* Content Area */}
         <div className="flex-1 overflow-auto p-4 lg:p-6">
-          {/* Metrics Cards */}
-          <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+20.1%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2,350</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+180.1%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sales</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12,234</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+19%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">573</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+201</span> since last hour
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-          {/* Main Content */}
-          <div className="grid gap-4 md:gap-6 lg:grid-cols-4">
-            {/* Chart Area */}
-            <Card className="lg:col-span-3">
+          {/* Code Hosting Card */}
+          <div className="mb-6">
+            <Card className="max-w-2xl">
               <CardHeader>
-                <CardTitle>Analytics Overview</CardTitle>
-                <CardDescription>Monthly performance metrics</CardDescription>
+                <CardTitle className="flex items-center space-x-2">
+                  <Github className="h-5 w-5" />
+                  <span>Code Hosting</span>
+                </CardTitle>
+                <CardDescription>
+                  Create a new GitHub repository for your project
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="overview" className="space-y-4">
-                  <TabsList>
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                    <TabsTrigger value="reports">Reports</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="overview" className="space-y-4">
-                    <div className="h-[300px] rounded-lg bg-muted/50 p-4 flex items-center justify-center">
-                      <div className="text-center">
-                        <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">Chart visualization would go here</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="analytics">
-                    <div className="h-[300px] rounded-lg bg-muted/50 p-4 flex items-center justify-center">
-                      <p className="text-sm text-muted-foreground">Analytics content</p>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="reports">
-                    <div className="h-[300px] rounded-lg bg-muted/50 p-4 flex items-center justify-center">
-                      <p className="text-sm text-muted-foreground">Reports content</p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="project-name" className="text-sm font-medium">
+                    Project Name
+                  </label>
+                  <Input
+                    id="project-name"
+                    placeholder="Enter your project name..."
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <Button 
+                  className="w-full sm:w-auto flex items-center space-x-2"
+                  disabled={!projectName.trim()}
+                  onClick={() => {
+                    if (projectName.trim()) {
+                      window.open(`https://github.com/new?name=${encodeURIComponent(projectName.trim())}`, '_blank')
+                    }
+                  }}
+                >
+                  <Github className="h-4 w-4" />
+                  <span>Create Repository on GitHub</span>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
               </CardContent>
             </Card>
-
-            {/* Sidebar */}
-            <div className="space-y-4">
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>JD</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm">John created a new project</p>
-                      <p className="text-xs text-muted-foreground">2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>SM</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm">Sarah updated the design</p>
-                      <p className="text-xs text-muted-foreground">4 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>MJ</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm">Mike deployed to production</p>
-                      <p className="text-xs text-muted-foreground">6 hours ago</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Project Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Project Status</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Website Redesign</span>
-                      <Badge variant="outline">In Progress</Badge>
-                    </div>
-                    <Progress value={75} className="h-2" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Mobile App</span>
-                      <Badge variant="outline">Review</Badge>
-                    </div>
-                    <Progress value={60} className="h-2" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">API Integration</span>
-                      <Badge variant="outline">Completed</Badge>
-                    </div>
-                    <Progress value={100} className="h-2" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </div>
       </div>
