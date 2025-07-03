@@ -42,7 +42,7 @@ export default function Dashboard() {
     }
   }, [])
 
-  // Autosave project name
+  // Autosave project name and create/update project in projects list
   useEffect(() => {
     if (projectName.trim()) {
       setIsSaving(true)
@@ -53,6 +53,10 @@ export default function Dashboard() {
         localStorage.setItem('createstack-project-name', projectName)
         localStorage.setItem('createstack-last-saved', new Date().toISOString())
         setLastSaved(new Date())
+        
+        // Save/update project in the projects list
+        saveOrUpdateProject(projectName.trim(), selectedPlatform)
+        
         setIsSaving(false)
       } else {
         localStorage.removeItem('createstack-project-name')
@@ -66,7 +70,7 @@ export default function Dashboard() {
         setIsSaving(false)
       }
     }
-  }, [projectName])
+  }, [projectName, selectedPlatform])
 
   // Autosave selected platform
   useEffect(() => {
@@ -75,24 +79,35 @@ export default function Dashboard() {
       localStorage.setItem('createstack-selected-platform', selectedPlatform)
       localStorage.setItem('createstack-last-saved', new Date().toISOString())
       setLastSaved(new Date())
+      
+      // Update project platform if project name exists
+      if (projectName.trim()) {
+        saveOrUpdateProject(projectName.trim(), selectedPlatform)
+      }
+      
       setIsSaving(false)
     }, 100) // Quick save for platform changes
 
     return () => clearTimeout(saveTimer)
-  }, [selectedPlatform])
+  }, [selectedPlatform, projectName])
 
   // Clear saved data function
   const clearSavedData = () => {
     localStorage.removeItem('createstack-project-name')
     localStorage.removeItem('createstack-selected-platform')
     localStorage.removeItem('createstack-last-saved')
+    
+    // Remove draft project from projects list
+    const existingProjects = JSON.parse(localStorage.getItem('createstack-projects') || '[]')
+    const filteredProjects = existingProjects.filter((p: any) => p.id !== 'current-draft')
+    localStorage.setItem('createstack-projects', JSON.stringify(filteredProjects))
+    
     setProjectName("")
     setSelectedPlatform("github")
     setLastSaved(null)
     setIsSaving(false)
   }
 
-  // Format last saved time
   const formatLastSaved = (date: Date) => {
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
@@ -108,6 +123,37 @@ export default function Dashboard() {
     } else {
       return date.toLocaleDateString()
     }
+  }
+
+  // Save or update project in the projects list
+  const saveOrUpdateProject = (name: string, platform: string) => {
+    const existingProjects = JSON.parse(localStorage.getItem('createstack-projects') || '[]')
+    
+    // Check if a project with the current saved name already exists
+    const savedProjectName = localStorage.getItem('createstack-project-name')
+    const existingProjectIndex = existingProjects.findIndex((p: any) => 
+      p.name === savedProjectName || p.id === 'current-draft'
+    )
+    
+    const projectData = {
+      id: existingProjectIndex >= 0 ? existingProjects[existingProjectIndex].id : 'current-draft',
+      name: name,
+      platform: platform,
+      createdAt: existingProjectIndex >= 0 ? existingProjects[existingProjectIndex].createdAt : new Date(),
+      lastModified: new Date(),
+      status: 'draft' as const,
+      repositoryUrl: undefined
+    }
+    
+    if (existingProjectIndex >= 0) {
+      // Update existing project
+      existingProjects[existingProjectIndex] = projectData
+    } else {
+      // Add new project
+      existingProjects.push(projectData)
+    }
+    
+    localStorage.setItem('createstack-projects', JSON.stringify(existingProjects))
   }
 
   const platforms = [
@@ -173,20 +219,34 @@ export default function Dashboard() {
     if (projectName.trim()) {
       const platform = platforms.find(p => p.id === selectedPlatform)
       if (platform) {
-        // Save project to localStorage before creating repository
-        const newProject = {
-          id: Date.now().toString(),
-          name: projectName.trim(),
-          platform: selectedPlatform,
-          createdAt: new Date(),
-          lastModified: new Date(),
-          status: 'active' as const,
-          repositoryUrl: undefined // Will be set after repository creation
-        };
-
-        const existingProjects = JSON.parse(localStorage.getItem('createstack-projects') || '[]');
-        const updatedProjects = [...existingProjects, newProject];
-        localStorage.setItem('createstack-projects', JSON.stringify(updatedProjects));
+        // Update existing project status to active and generate permanent ID
+        const existingProjects = JSON.parse(localStorage.getItem('createstack-projects') || '[]')
+        const projectIndex = existingProjects.findIndex((p: any) => p.id === 'current-draft')
+        
+        if (projectIndex >= 0) {
+          // Update existing draft project to active
+          existingProjects[projectIndex] = {
+            ...existingProjects[projectIndex],
+            id: Date.now().toString(), // Give it a permanent ID
+            status: 'active',
+            lastModified: new Date(),
+            repositoryUrl: platform.url !== '#' ? platform.url + encodeURIComponent(projectName.trim()) : undefined
+          }
+        } else {
+          // Fallback: create new project if draft doesn't exist
+          const newProject = {
+            id: Date.now().toString(),
+            name: projectName.trim(),
+            platform: selectedPlatform,
+            createdAt: new Date(),
+            lastModified: new Date(),
+            status: 'active' as const,
+            repositoryUrl: platform.url !== '#' ? platform.url + encodeURIComponent(projectName.trim()) : undefined
+          }
+          existingProjects.push(newProject)
+        }
+        
+        localStorage.setItem('createstack-projects', JSON.stringify(existingProjects))
 
         if (platform.id === "gitea") {
           alert("Gitea/Gogs requires self-hosting. Please visit your self-hosted instance to create a repository.")
