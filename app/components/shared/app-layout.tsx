@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
-import { Bell, Settings, Plus } from "lucide-react"
+import { Settings, Plus } from "lucide-react"
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -45,10 +45,6 @@ export function AppLayout({ children, title, description, headerActions }: AppLa
                     <span>New Project</span>
                   </Button>
                 )}
-                
-                <Button variant="outline" size="icon">
-                  <Bell className="h-4 w-4" />
-                </Button>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

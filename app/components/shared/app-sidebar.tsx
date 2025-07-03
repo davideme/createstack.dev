@@ -2,7 +2,6 @@ import { Avatar, AvatarFallback } from "~/components/ui/avatar"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -58,18 +57,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      
-      <SidebarFooter>
-        <div className="flex items-center space-x-3 px-3 py-2">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">John Doe</p>
-            <p className="text-xs text-muted-foreground truncate">john@example.com</p>
-          </div>
-        </div>
-      </SidebarFooter>
     </Sidebar>
   )
 }
