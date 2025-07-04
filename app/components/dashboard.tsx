@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [showIaC, setShowIaC] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [selectedDepTool, setSelectedDepTool] = useState("dependabot")
   const { isReady, error } = useDB()
 
   // Load saved data on component mount
@@ -50,6 +51,56 @@ export default function Dashboard() {
 
     loadPreferences()
   }, [isReady])
+
+  // Reset dependency tool selection when platform changes if current selection is not available
+  useEffect(() => {
+    const availableTools = getAvailableDependencyTools()
+    const isCurrentToolAvailable = availableTools.some(tool => tool.id === selectedDepTool)
+    
+    if (!isCurrentToolAvailable && availableTools.length > 0) {
+      // Set to the first available tool, preferring platform-specific ones
+      const platformSpecificTool = availableTools.find(tool => 
+        (selectedPlatform === 'github' && tool.id === 'dependabot') ||
+        (selectedPlatform === 'gitlab' && tool.id === 'gitlab-deps')
+      )
+      setSelectedDepTool(platformSpecificTool?.id || availableTools[0].id)
+    }
+  }, [selectedPlatform])
+
+  const getAvailableDependencyTools = () => {
+    return dependencyTools.filter(tool => {
+      // Platform-specific filtering
+      if (tool.id === 'dependabot') {
+        return selectedPlatform === 'github'
+      }
+      if (tool.id === 'gitlab-deps') {
+        return selectedPlatform === 'gitlab'
+      }
+      // Other tools are available for all platforms
+      return true
+    })
+  }
+
+  const getDependencyToolDocumentationUrl = (toolId: string) => {
+    const urls = {
+      dependabot: "https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates#enabling-dependabot-version-updates",
+      renovate: "https://docs.renovatebot.com/getting-started/",
+      snyk: "https://docs.snyk.io/getting-started",
+      whitesource: "https://docs.mend.io/bundle/integrations/page/getting_started.html",
+      "gitlab-deps": "https://docs.gitlab.com/ee/user/application_security/dependency_scanning/",
+      manual: "#" // No specific documentation for manual management
+    }
+    return urls[toolId as keyof typeof urls] || "#"
+  }
+
+  const handleConfigureTool = () => {
+    const url = getDependencyToolDocumentationUrl(selectedDepTool)
+    if (url !== "#") {
+      window.open(url, '_blank')
+    } else {
+      alert("Manual dependency management doesn't require specific configuration. Simply review and update dependencies as needed.")
+    }
+  }
 
   // Autosave project name and create/update project in projects list
   useEffect(() => {
@@ -224,6 +275,69 @@ export default function Dashboard() {
       description: "Self-hosted, lightweight Git servers. ✅ Pull Requests supported.",
       bestFor: "Teams needing self-hosted, low-overhead Git.",
       url: "#" // Self-hosted, no direct URL
+    }
+  ]
+
+  const dependencyTools = [
+    {
+      id: "dependabot",
+      name: "Dependabot",
+      emoji: "🤖",
+      description: "GitHub's built-in automated dependency updates. ✅ Security alerts, automated PRs, supports 20+ ecosystems. Languages: JavaScript/Node.js, Python, Ruby, Java, .NET, Go, PHP, Rust, Elixir, Docker, GitHub Actions.",
+      platform: "GitHub",
+      bestFor: "GitHub repositories, automated security updates.",
+      pricing: "Free on GitHub",
+      features: ["Security alerts", "Automated PRs", "Version updates", "Vulnerability scanning"]
+    },
+    {
+      id: "renovate",
+      name: "Renovate",
+      emoji: "🔄",
+      description: "Universal dependency update tool. ✅ Multi-platform support, highly configurable, self-hosted option available. Languages: JavaScript/Node.js, Python, Java, .NET, Go, PHP, Ruby, Rust, Docker, Kubernetes, Terraform, and 60+ package managers.",
+      platform: "Multi-platform",
+      bestFor: "Complex projects, custom update strategies.",
+      pricing: "Free (self-hosted), WhiteSource hosted plans available",
+      features: ["Multi-platform", "Custom configs", "Scheduled updates", "Grouped updates"]
+    },
+    {
+      id: "snyk",
+      name: "Snyk",
+      emoji: "🛡️",
+      description: "Security-focused dependency scanning. ✅ Vulnerability database, license compliance, container scanning. Languages: JavaScript/Node.js, Python, Java, .NET, Ruby, Go, PHP, Scala, Swift, C/C++, Docker, Kubernetes.",
+      platform: "Multi-platform",
+      bestFor: "Security-first teams, enterprise compliance.",
+      pricing: "Free tier, Pro plans from $25/month",
+      features: ["Vulnerability scanning", "License compliance", "Container security", "IDE integrations"]
+    },
+    {
+      id: "whitesource",
+      name: "WhiteSource (Mend)",
+      emoji: "🔍",
+      description: "Enterprise dependency management. ✅ License compliance, vulnerability scanning, policy enforcement. Languages: JavaScript/Node.js, Python, Java, .NET, Ruby, Go, PHP, C/C++, Scala, R, and 200+ programming languages.",
+      platform: "Multi-platform",
+      bestFor: "Enterprise teams, compliance requirements.",
+      pricing: "Enterprise pricing, contact for quotes",
+      features: ["License scanning", "Policy enforcement", "Risk assessment", "Compliance reporting"]
+    },
+    {
+      id: "gitlab-deps",
+      name: "GitLab Dependency Scanning",
+      emoji: "🦊",
+      description: "GitLab's built-in dependency scanning. ✅ Security dashboard, merge request integration, CI/CD native. Languages: JavaScript/Node.js, Python, Java, .NET, Go, PHP, Ruby, C/C++, Scala.",
+      platform: "GitLab",
+      bestFor: "GitLab users, integrated DevOps workflows.",
+      pricing: "Free tier, Premium features from $19/user/month",
+      features: ["Security dashboard", "MR integration", "CI/CD native", "Vulnerability management"]
+    },
+    {
+      id: "manual",
+      name: "Manual Management",
+      emoji: "👤",
+      description: "Traditional manual dependency updates. ⚠️ No automation, requires manual monitoring and updates. Languages: All programming languages (manual process).",
+      platform: "Any",
+      bestFor: "Small projects, full control over updates.",
+      pricing: "Free (but requires developer time)",
+      features: ["Full control", "No automation", "Manual review", "Custom timing"]
     }
   ]
 
@@ -574,6 +688,278 @@ ${new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} (
 
 ---
 *This ADR was generated by CreateStack.dev on ${currentDate}*`
+  }
+
+  const generateDependencyADR = () => {
+    const repoName = projectName.trim() || "my-project"
+    const tool = dependencyTools.find(t => t.id === selectedDepTool)
+    const currentDate = new Date().toISOString().split('T')[0]
+    const adrNumber = "002" // Could be made dynamic based on existing ADRs
+    
+    return `# ADR-${adrNumber}: Dependency Management Tool Selection for ${repoName}
+
+## Status
+Accepted
+
+## Date
+${currentDate}
+
+## Context
+We need to select a dependency management tool for the ${repoName} project. This decision will impact our security posture, maintenance overhead, development workflow, and how we handle dependency updates and vulnerability management.
+
+## Decision
+We have decided to use **${tool?.name}** for dependency management.
+
+## Rationale
+### Tool Overview
+${tool?.description}
+
+### Key Benefits
+- **Best suited for**: ${tool?.bestFor}
+- **Platform compatibility**: ${tool?.platform}
+- **Pricing model**: ${tool?.pricing}
+- **Key features**: ${tool?.features.join(', ')}
+
+### Technical Considerations
+${getDependencyTechnicalConsiderations(selectedDepTool)}
+
+## Consequences
+### Positive
+- ${getDependencyPositiveConsequences(selectedDepTool).join('\n- ')}
+
+### Negative
+- ${getDependencyNegativeConsequences(selectedDepTool).join('\n- ')}
+
+### Neutral
+- Documentation: ${getDependencyToolDocumentationUrl(selectedDepTool)}
+- Implementation effort: ${getDependencyImplementationEffort(selectedDepTool)}
+- Team training required: ${getDependencyTrainingRequirements(selectedDepTool)}
+
+## Implementation Notes
+1. ${getDependencyImplementationSteps(selectedDepTool).join('\n2. ')}
+
+## Alternatives Considered
+${getDependencyAlternativesConsidered(selectedDepTool)}
+
+## Review Date
+${new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} (90 days from decision)
+
+---
+*This ADR was generated by CreateStack.dev on ${currentDate}*`
+  }
+
+  const getDependencyTechnicalConsiderations = (toolId: string) => {
+    const considerations = {
+      dependabot: `- Native GitHub integration with zero configuration overhead
+- Automatic security vulnerability detection and patching
+- Support for 20+ package ecosystems and languages
+- Pull request-based workflow for dependency updates
+- Configurable update schedules and grouping options`,
+      renovate: `- Universal platform support (GitHub, GitLab, Bitbucket, Azure DevOps)
+- Highly configurable with extensive customization options
+- Support for 60+ package managers and ecosystems
+- Advanced scheduling and grouping capabilities
+- Self-hosted deployment option for enhanced control`,
+      snyk: `- Security-first approach with comprehensive vulnerability database
+- License compliance scanning and policy enforcement
+- Container and infrastructure as code scanning
+- IDE integrations for developer workflow integration
+- Advanced reporting and analytics capabilities`,
+      whitesource: `- Enterprise-grade compliance and risk management
+- Support for 200+ programming languages and package managers
+- Advanced license policy enforcement and legal compliance
+- Risk scoring and prioritization algorithms
+- Integration with enterprise security and compliance workflows`,
+      "gitlab-deps": `- Native GitLab integration with built-in CI/CD pipeline support
+- Security dashboard with merge request integration
+- Automatic vulnerability detection in CI/CD pipelines
+- Policy-based security gates and compliance controls
+- Integration with GitLab's complete DevOps platform`,
+      manual: `- Complete control over dependency update timing and process
+- No automated changes or potential breaking updates
+- Custom review and testing processes for each update
+- Requires manual monitoring of security advisories
+- Time-intensive but provides maximum oversight`
+    }
+    return considerations[toolId as keyof typeof considerations] || "Standard dependency management capabilities"
+  }
+
+  const getDependencyPositiveConsequences = (toolId: string) => {
+    const positive = {
+      dependabot: [
+        "Zero configuration required for basic functionality",
+        "Native GitHub integration ensures seamless workflow",
+        "Automatic security vulnerability patching reduces risk",
+        "Free for all GitHub repositories",
+        "Well-documented and widely adopted"
+      ],
+      renovate: [
+        "Platform-agnostic solution works across different Git hosts",
+        "Highly customizable to fit complex project requirements",
+        "Self-hosted option provides complete control and privacy",
+        "Advanced scheduling prevents overwhelming pull requests",
+        "Active open-source community and regular updates"
+      ],
+      snyk: [
+        "Security-focused approach prioritizes vulnerability management",
+        "Comprehensive license compliance reduces legal risks",
+        "Developer-friendly IDE integrations catch issues early",
+        "Detailed vulnerability intelligence and remediation guidance",
+        "Enterprise-grade reporting and compliance features"
+      ],
+      whitesource: [
+        "Enterprise-scale support for large organizations",
+        "Comprehensive language and ecosystem coverage",
+        "Advanced compliance and risk management capabilities",
+        "Professional support and service level agreements",
+        "Integration with enterprise security frameworks"
+      ],
+      "gitlab-deps": [
+        "Native integration with GitLab's complete DevOps platform",
+        "Built-in security dashboard and reporting",
+        "Automatic integration with CI/CD pipelines",
+        "Policy enforcement at the merge request level",
+        "No additional tool licensing for GitLab users"
+      ],
+      manual: [
+        "Complete control over update timing and testing",
+        "No risk of automated breaking changes",
+        "Custom review processes ensure quality",
+        "No dependency on external tools or services",
+        "Perfect understanding of all changes being made"
+      ]
+    }
+    return positive[toolId as keyof typeof positive] || ["Tool-specific advantages"]
+  }
+
+  const getDependencyNegativeConsequences = (toolId: string) => {
+    const negative = {
+      dependabot: [
+        "Limited to GitHub platform only",
+        "Less configuration flexibility compared to alternatives",
+        "Can generate many pull requests without careful configuration",
+        "Limited support for complex monorepo scenarios",
+        "Dependency on GitHub's service availability"
+      ],
+      renovate: [
+        "Requires more initial configuration and setup time",
+        "Can be overwhelming with extensive configuration options",
+        "Self-hosted deployment requires infrastructure management",
+        "Learning curve for advanced configuration features",
+        "May require dedicated team member for optimal configuration"
+      ],
+      snyk: [
+        "Commercial product with licensing costs for advanced features",
+        "Can be noisy with many security alerts requiring triage",
+        "Focus on security may miss functional dependency updates",
+        "Requires integration setup across development tools",
+        "May require security expertise to interpret results effectively"
+      ],
+      whitesource: [
+        "Enterprise pricing may be prohibitive for smaller teams",
+        "Complex setup and configuration for full feature utilization",
+        "Requires dedicated compliance and security expertise",
+        "May be overkill for simple projects or small teams",
+        "Vendor lock-in with proprietary enterprise features"
+      ],
+      "gitlab-deps": [
+        "Limited to GitLab platform and users",
+        "Premium features require paid GitLab subscription",
+        "Less extensive than dedicated dependency management tools",
+        "Dependent on GitLab's roadmap and feature priorities",
+        "May not cover all specialized package managers"
+      ],
+      manual: [
+        "Significant time investment required for monitoring and updates",
+        "High risk of missing critical security vulnerabilities",
+        "Prone to human error and inconsistent processes",
+        "Does not scale well with project or team growth",
+        "May lead to outdated dependencies and technical debt"
+      ]
+    }
+    return negative[toolId as keyof typeof negative] || ["Tool-specific limitations"]
+  }
+
+  const getDependencyImplementationEffort = (toolId: string) => {
+    const effort = {
+      dependabot: "Low - Enable in GitHub repository settings, optionally add .github/dependabot.yml",
+      renovate: "Medium - Configure renovate.json and set up authentication",
+      snyk: "Medium - Install CLI, configure integrations, set up policies",
+      whitesource: "High - Enterprise deployment, policy configuration, training",
+      "gitlab-deps": "Low - Enable in GitLab project settings and CI/CD pipeline",
+      manual: "High - Establish processes, monitoring, and update procedures"
+    }
+    return effort[toolId as keyof typeof effort] || "Varies based on tool complexity"
+  }
+
+  const getDependencyTrainingRequirements = (toolId: string) => {
+    const training = {
+      dependabot: "Minimal - Basic understanding of pull request workflows",
+      renovate: "Moderate - Configuration syntax and scheduling concepts",
+      snyk: "Moderate - Security vulnerability assessment and remediation",
+      whitesource: "Extensive - Enterprise compliance and policy management",
+      "gitlab-deps": "Minimal - GitLab CI/CD and merge request workflows",
+      manual: "Extensive - Security monitoring and update best practices"
+    }
+    return training[toolId as keyof typeof training] || "Standard tool-specific training"
+  }
+
+  const getDependencyImplementationSteps = (toolId: string) => {
+    const steps = {
+      dependabot: [
+        "Enable Dependabot security updates in repository settings",
+        "Create .github/dependabot.yml configuration file",
+        "Configure update schedules and package ecosystems",
+        "Set up branch protection rules for automated PRs",
+        "Configure team notification preferences"
+      ],
+      renovate: [
+        "Install Renovate app or configure self-hosted instance",
+        "Create renovate.json configuration file",
+        "Configure platform authentication and permissions",
+        "Set up update schedules and grouping rules",
+        "Configure branch protection and auto-merge policies"
+      ],
+      snyk: [
+        "Sign up for Snyk account and install CLI tools",
+        "Integrate with repository and CI/CD pipelines",
+        "Configure vulnerability policies and thresholds",
+        "Set up IDE integrations for developer workflows",
+        "Establish security triage and remediation processes"
+      ],
+      whitesource: [
+        "Deploy WhiteSource agents and configure organization settings",
+        "Set up project scanning and policy enforcement",
+        "Configure license compliance rules and approval workflows",
+        "Integrate with enterprise security and compliance systems",
+        "Train team on compliance reporting and risk management"
+      ],
+      "gitlab-deps": [
+        "Enable dependency scanning in GitLab project settings",
+        "Configure .gitlab-ci.yml to include dependency scanning jobs",
+        "Set up security dashboard monitoring and alerts",
+        "Configure merge request security policies",
+        "Establish vulnerability triage and remediation workflows"
+      ],
+      manual: [
+        "Establish dependency monitoring and tracking processes",
+        "Create update schedules and responsibility assignments",
+        "Set up security advisory monitoring systems",
+        "Develop testing and validation procedures for updates",
+        "Document update procedures and emergency response plans"
+      ]
+    }
+    return steps[toolId as keyof typeof steps] || ["Configure tool according to documentation", "Set up monitoring and alerting", "Train team on tool usage", "Establish update and triage processes"]
+  }
+
+  const getDependencyAlternativesConsidered = (selectedToolId: string) => {
+    const alternatives = dependencyTools
+      .filter(t => t.id !== selectedToolId)
+      .slice(0, 3) // Show top 3 alternatives
+      .map(tool => `- **${tool.name}**: ${tool.description} Best for: ${tool.bestFor}`)
+      .join('\n')
+    
+    return alternatives || "Other dependency management approaches were evaluated but deemed less suitable for this project's requirements."
   }
 
   const getEcosystemBenefits = (platformId: string) => {
@@ -1040,20 +1426,20 @@ ${getComplianceDetails(selectedPlatform)}`
       description="Welcome back! Here's what's happening."
       headerActions={clearSavedDataAction}
     >
-            {/* Code Hosting Card */}
-            <div className="mb-6">
-              <Card className="max-w-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <span className="text-xl">{platforms.find(p => p.id === selectedPlatform)?.emoji}</span>
-                  <span>Code Hosting</span>
-                  {isSaving && (
-                    <div className="flex items-center space-x-1 ml-auto">
-                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                      <span className="text-xs text-muted-foreground font-normal">Saving...</span>
-                    </div>
-                  )}
-                </CardTitle>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Code Hosting Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <span className="text-xl">{platforms.find(p => p.id === selectedPlatform)?.emoji}</span>
+              <span>Code Hosting</span>
+              {isSaving && (
+                <div className="flex items-center space-x-1 ml-auto">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                  <span className="text-xs text-muted-foreground font-normal">Saving...</span>
+                </div>
+              )}
+            </CardTitle>
                 <CardDescription className="flex items-center justify-between">
                   <span>Create a new repository for your project on your preferred platform</span>
                   {(projectName.trim() || selectedPlatform !== "github") && (
@@ -1267,7 +1653,208 @@ ${getComplianceDetails(selectedPlatform)}`
                 )}
               </CardContent>
             </Card>
-          </div>
+
+        {/* Dependencies Management Card */}
+        <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <span className="text-xl">{dependencyTools.find(t => t.id === selectedDepTool)?.emoji}</span>
+                  <span>Dependencies Management</span>
+                  {isSaving && (
+                    <div className="flex items-center space-x-1 ml-auto">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                      <span className="text-xs text-muted-foreground font-normal">Saving...</span>
+                    </div>
+                  )}
+                </CardTitle>
+                <CardDescription className="flex items-center justify-between">
+                  <span>Manage your project dependencies and automate updates</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSavedData}
+                    className="text-xs h-6 px-2"
+                  >
+                    Clear All
+                  </Button>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="dep-tool-select" className="text-sm font-medium">
+                    Dependency Tool
+                  </label>
+                  <Select value={selectedDepTool} onValueChange={setSelectedDepTool}>
+                    <SelectTrigger id="dep-tool-select">
+                      <SelectValue placeholder="Select a dependency tool" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getAvailableDependencyTools().map((tool) => (
+                        <SelectItem key={tool.id} value={tool.id}>
+                          <div className="flex items-center space-x-2">
+                            <span>{tool.emoji}</span>
+                            <span>{tool.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Tool Info */}
+                <div className="p-3 bg-muted rounded-lg">
+                  <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
+                    <span>{dependencyTools.find(t => t.id === selectedDepTool)?.emoji}</span>
+                    <span>{dependencyTools.find(t => t.id === selectedDepTool)?.name}</span>
+                  </h4>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {dependencyTools.find(t => t.id === selectedDepTool)?.description}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Best for:</strong> {dependencyTools.find(t => t.id === selectedDepTool)?.bestFor}
+                  </p>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    className="flex items-center space-x-2"
+                    disabled={!projectName.trim()}
+                    onClick={handleConfigureTool}
+                  >
+                    <span>{dependencyTools.find(t => t.id === selectedDepTool)?.emoji}</span>
+                    <span>Configure Tool</span>
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {/* ADR Section */}
+                {projectName.trim() && (
+                  <div className="space-y-2 border-t pt-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">📝 Architecture Decision Record</h4>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyToClipboard(generateDependencyADR())}
+                      >
+                        Copy ADR
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Document your dependencies management decision for future reference
+                    </p>
+                  </div>
+                )}
+
+                {/* Vendor Comparison Section */}
+                {projectName.trim() && (
+                  <div className="space-y-2 border-t pt-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">📊 Vendor Entry</h4>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyToClipboard(generateVendorComparison())}
+                      >
+                        Copy Vendor Row
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Single vendor entry ready for your evaluation spreadsheet
+                    </p>
+                  </div>
+                )}
+
+                {/* Configuration as Code Section */}
+                {showIaC && projectName.trim() && (
+                  <div className="space-y-4 border-t pt-4">
+                    <h4 className="text-sm font-medium">Configuration as Code Templates</h4>
+                    
+                    <Tabs defaultValue="terraform" className="w-full">
+                      <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="terraform">Terraform</TabsTrigger>
+                        <TabsTrigger value="pulumi">Pulumi</TabsTrigger>
+                        <TabsTrigger value="cdk">CDK</TabsTrigger>
+                        <TabsTrigger value="cloudformation">CloudFormation</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="terraform" className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground">Terraform HCL configuration</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => copyToClipboard(generateTerraformCode())}
+                          >
+                            Copy Code
+                          </Button>
+                        </div>
+                        <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
+                          <pre className="p-3 text-xs">
+                            <code>{generateTerraformCode()}</code>
+                          </pre>
+                        </ScrollArea>
+                      </TabsContent>
+                      
+                      <TabsContent value="pulumi" className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground">Pulumi TypeScript program</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => copyToClipboard(generatePulumiCode())}
+                          >
+                            Copy Code
+                          </Button>
+                        </div>
+                        <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
+                          <pre className="p-3 text-xs">
+                            <code>{generatePulumiCode()}</code>
+                          </pre>
+                        </ScrollArea>
+                      </TabsContent>
+                      
+                      <TabsContent value="cdk" className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground">AWS CDK TypeScript</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => copyToClipboard(generateCDKCode())}
+                          >
+                            Copy Code
+                          </Button>
+                        </div>
+                        <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
+                          <pre className="p-3 text-xs">
+                            <code>{generateCDKCode()}</code>
+                          </pre>
+                        </ScrollArea>
+                      </TabsContent>
+                      
+                      <TabsContent value="cloudformation" className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground">AWS CloudFormation template</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => copyToClipboard(generateCloudFormationCode())}
+                          >
+                            Copy Code
+                          </Button>
+                        </div>
+                        <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
+                          <pre className="p-3 text-xs">
+                            <code>{generateCloudFormationCode()}</code>
+                          </pre>
+                        </ScrollArea>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+      </div>
     </AppLayout>
   )
 }
