@@ -12,7 +12,8 @@ import {
   Trash2,
   Settings,
   ArrowUpDown,
-  MoreHorizontal
+  MoreHorizontal,
+  Loader2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -24,6 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { useProjects, type Project } from "~/lib/db";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -32,75 +34,8 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-interface Project {
-  id: string;
-  name: string;
-  platform: string;
-  createdAt: Date;
-  lastModified: Date;
-  status: 'active' | 'archived' | 'draft';
-  repositoryUrl?: string;
-}
-
 export default function Projects() {
-  const [projects, setProjects] = useState<Project[]>([]);
-
-  // Load projects from localStorage on mount
-  useEffect(() => {
-    const savedProjects = localStorage.getItem('createstack-projects');
-    if (savedProjects) {
-      try {
-        const parsed = JSON.parse(savedProjects);
-        const projectsWithDates = parsed.map((project: any) => ({
-          ...project,
-          createdAt: new Date(project.createdAt),
-          lastModified: new Date(project.lastModified)
-        }));
-        setProjects(projectsWithDates);
-      } catch (error) {
-        console.error('Failed to parse saved projects:', error);
-        // Create some sample projects for demo
-        const sampleProjects: Project[] = [
-          {
-            id: '1',
-            name: 'E-commerce Platform',
-            platform: 'github',
-            createdAt: new Date('2024-12-15'),
-            lastModified: new Date('2024-12-20'),
-            status: 'active',
-            repositoryUrl: 'https://github.com/user/ecommerce-platform'
-          },
-          {
-            id: '2',
-            name: 'Mobile App Backend',
-            platform: 'gitlab',
-            createdAt: new Date('2024-12-10'),
-            lastModified: new Date('2024-12-18'),
-            status: 'active',
-            repositoryUrl: 'https://gitlab.com/user/mobile-backend'
-          },
-          {
-            id: '3',
-            name: 'Analytics Dashboard',
-            platform: 'bitbucket',
-            createdAt: new Date('2024-12-01'),
-            lastModified: new Date('2024-12-05'),
-            status: 'draft'
-          },
-          {
-            id: '4',
-            name: 'Legacy System Migration',
-            platform: 'azure',
-            createdAt: new Date('2024-11-15'),
-            lastModified: new Date('2024-11-30'),
-            status: 'archived'
-          }
-        ];
-        setProjects(sampleProjects);
-        localStorage.setItem('createstack-projects', JSON.stringify(sampleProjects));
-      }
-    }
-  }, []);
+  const { projects, loading, deleteProject } = useProjects();
 
   const platformEmojis: Record<string, string> = {
     github: '🐙',
@@ -144,10 +79,13 @@ export default function Projects() {
     }
   };
 
-  const deleteProject = (projectId: string) => {
-    const updatedProjects = projects.filter(p => p.id !== projectId);
-    setProjects(updatedProjects);
-    localStorage.setItem('createstack-projects', JSON.stringify(updatedProjects));
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      await deleteProject(projectId);
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      alert('Failed to delete project. Please try again.');
+    }
   };
 
   const navigateToHome = () => {
@@ -315,7 +253,7 @@ export default function Projects() {
                 Edit project
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => deleteProject(project.id)}
+                onClick={() => handleDeleteProject(project.id)}
                 className="text-red-600"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -344,7 +282,14 @@ export default function Projects() {
       description="Manage and organize all your development projects"
       headerActions={newProjectAction}
     >
-      <DataTable columns={columns} data={projects} />
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading projects...</span>
+        </div>
+      ) : (
+        <DataTable columns={columns} data={projects} />
+      )}
     </AppLayout>
   );
 }

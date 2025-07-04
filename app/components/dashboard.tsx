@@ -11,6 +11,7 @@ import { ScrollArea } from "~/components/ui/scroll-area"
 import { AppLayout } from "~/components/shared/app-layout"
 import { ExternalLink } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useDB, db, type Project } from "~/lib/db"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("project")
@@ -19,47 +20,55 @@ export default function Dashboard() {
   const [showIaC, setShowIaC] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const { isReady, error } = useDB()
 
   // Load saved data on component mount
   useEffect(() => {
-    const savedProjectName = localStorage.getItem('createstack-project-name')
-    const savedPlatform = localStorage.getItem('createstack-selected-platform')
-    
-    if (savedProjectName) {
-      setProjectName(savedProjectName)
-    }
-    
-    if (savedPlatform) {
-      setSelectedPlatform(savedPlatform)
-    }
-    
-    // Set initial last saved time if data exists
-    if (savedProjectName || savedPlatform) {
-      const savedTime = localStorage.getItem('createstack-last-saved')
-      if (savedTime) {
-        setLastSaved(new Date(savedTime))
+    if (!isReady) return;
+
+    const loadPreferences = async () => {
+      try {
+        const savedProjectName = await db.getPreference('currentProjectName')
+        const savedPlatform = await db.getPreference('selectedPlatform')
+        const savedTime = await db.getPreference('lastSaved')
+        
+        if (savedProjectName) {
+          setProjectName(savedProjectName)
+        }
+        
+        if (savedPlatform) {
+          setSelectedPlatform(savedPlatform)
+        }
+        
+        if (savedTime) {
+          setLastSaved(new Date(savedTime))
+        }
+      } catch (error) {
+        console.error('Failed to load preferences:', error)
       }
     }
-  }, [])
+
+    loadPreferences()
+  }, [isReady])
 
   // Autosave project name and create/update project in projects list
   useEffect(() => {
-    if (projectName.trim()) {
-      setIsSaving(true)
-    }
+    if (!isReady || !projectName.trim()) return;
+
+    setIsSaving(true)
     
-    const saveTimer = setTimeout(() => {
-      if (projectName.trim()) {
-        localStorage.setItem('createstack-project-name', projectName)
-        localStorage.setItem('createstack-last-saved', new Date().toISOString())
+    const saveTimer = setTimeout(async () => {
+      try {
+        await db.setPreference('currentProjectName', projectName)
+        await db.setPreference('lastSaved', new Date().toISOString())
         setLastSaved(new Date())
         
         // Save/update project in the projects list
-        saveOrUpdateProject(projectName.trim(), selectedPlatform)
+        await saveOrUpdateProject(projectName.trim(), selectedPlatform)
         
         setIsSaving(false)
-      } else {
-        localStorage.removeItem('createstack-project-name')
+      } catch (error) {
+        console.error('Failed to save project:', error)
         setIsSaving(false)
       }
     }, 1000) // Save after 1 second of inactivity
@@ -70,42 +79,54 @@ export default function Dashboard() {
         setIsSaving(false)
       }
     }
-  }, [projectName, selectedPlatform])
+  }, [projectName, selectedPlatform, isReady])
 
   // Autosave selected platform
   useEffect(() => {
+    if (!isReady) return;
+
     setIsSaving(true)
-    const saveTimer = setTimeout(() => {
-      localStorage.setItem('createstack-selected-platform', selectedPlatform)
-      localStorage.setItem('createstack-last-saved', new Date().toISOString())
-      setLastSaved(new Date())
-      
-      // Update project platform if project name exists
-      if (projectName.trim()) {
-        saveOrUpdateProject(projectName.trim(), selectedPlatform)
+    const saveTimer = setTimeout(async () => {
+      try {
+        await db.setPreference('selectedPlatform', selectedPlatform)
+        await db.setPreference('lastSaved', new Date().toISOString())
+        setLastSaved(new Date())
+        
+        // Update project platform if project name exists
+        if (projectName.trim()) {
+          await saveOrUpdateProject(projectName.trim(), selectedPlatform)
+        }
+        
+        setIsSaving(false)
+      } catch (error) {
+        console.error('Failed to save platform preference:', error)
+        setIsSaving(false)
       }
-      
-      setIsSaving(false)
     }, 100) // Quick save for platform changes
 
     return () => clearTimeout(saveTimer)
-  }, [selectedPlatform, projectName])
+  }, [selectedPlatform, projectName, isReady])
 
   // Clear saved data function
-  const clearSavedData = () => {
-    localStorage.removeItem('createstack-project-name')
-    localStorage.removeItem('createstack-selected-platform')
-    localStorage.removeItem('createstack-last-saved')
-    
-    // Remove draft project from projects list
-    const existingProjects = JSON.parse(localStorage.getItem('createstack-projects') || '[]')
-    const filteredProjects = existingProjects.filter((p: any) => p.id !== 'current-draft')
-    localStorage.setItem('createstack-projects', JSON.stringify(filteredProjects))
-    
-    setProjectName("")
-    setSelectedPlatform("github")
-    setLastSaved(null)
-    setIsSaving(false)
+  const clearSavedData = async () => {
+    try {
+      await db.setPreference('currentProjectName', null)
+      await db.setPreference('selectedPlatform', null)
+      await db.setPreference('lastSaved', null)
+      
+      // Remove draft project from projects list
+      const draftProject = await db.getProject('current-draft')
+      if (draftProject) {
+        await db.deleteProject('current-draft')
+      }
+      
+      setProjectName("")
+      setSelectedPlatform("github")
+      setLastSaved(null)
+      setIsSaving(false)
+    } catch (error) {
+      console.error('Failed to clear saved data:', error)
+    }
   }
 
   const formatLastSaved = (date: Date) => {
@@ -126,34 +147,25 @@ export default function Dashboard() {
   }
 
   // Save or update project in the projects list
-  const saveOrUpdateProject = (name: string, platform: string) => {
-    const existingProjects = JSON.parse(localStorage.getItem('createstack-projects') || '[]')
-    
-    // Check if a project with the current saved name already exists
-    const savedProjectName = localStorage.getItem('createstack-project-name')
-    const existingProjectIndex = existingProjects.findIndex((p: any) => 
-      p.name === savedProjectName || p.id === 'current-draft'
-    )
-    
-    const projectData = {
-      id: existingProjectIndex >= 0 ? existingProjects[existingProjectIndex].id : 'current-draft',
-      name: name,
-      platform: platform,
-      createdAt: existingProjectIndex >= 0 ? existingProjects[existingProjectIndex].createdAt : new Date(),
-      lastModified: new Date(),
-      status: 'draft' as const,
-      repositoryUrl: undefined
+  const saveOrUpdateProject = async (name: string, platform: string) => {
+    try {
+      // Check if a draft project already exists
+      let existingProject = await db.getProject('current-draft')
+      
+      const projectData: Project = {
+        id: 'current-draft',
+        name: name,
+        platform: platform,
+        createdAt: existingProject?.createdAt || new Date(),
+        lastModified: new Date(),
+        status: 'draft',
+        repositoryUrl: undefined
+      }
+      
+      await db.saveProject(projectData)
+    } catch (error) {
+      console.error('Failed to save project:', error)
     }
-    
-    if (existingProjectIndex >= 0) {
-      // Update existing project
-      existingProjects[existingProjectIndex] = projectData
-    } else {
-      // Add new project
-      existingProjects.push(projectData)
-    }
-    
-    localStorage.setItem('createstack-projects', JSON.stringify(existingProjects))
   }
 
   const platforms = [
@@ -215,38 +227,43 @@ export default function Dashboard() {
     }
   ]
 
-  const handleCreateRepository = () => {
+  const handleCreateRepository = async () => {
     if (projectName.trim()) {
       const platform = platforms.find(p => p.id === selectedPlatform)
       if (platform) {
-        // Update existing project status to active and generate permanent ID
-        const existingProjects = JSON.parse(localStorage.getItem('createstack-projects') || '[]')
-        const projectIndex = existingProjects.findIndex((p: any) => p.id === 'current-draft')
-        
-        if (projectIndex >= 0) {
-          // Update existing draft project to active
-          existingProjects[projectIndex] = {
-            ...existingProjects[projectIndex],
-            id: Date.now().toString(), // Give it a permanent ID
-            status: 'active',
-            lastModified: new Date(),
-            repositoryUrl: platform.url !== '#' ? platform.url + encodeURIComponent(projectName.trim()) : undefined
+        try {
+          // Update existing draft project to active status
+          const draftProject = await db.getProject('current-draft')
+          
+          if (draftProject) {
+            // Update existing draft project to active
+            const activeProject: Project = {
+              ...draftProject,
+              id: Date.now().toString(), // Give it a permanent ID
+              status: 'active',
+              lastModified: new Date(),
+              repositoryUrl: platform.url !== '#' ? platform.url + encodeURIComponent(projectName.trim()) : undefined
+            }
+            
+            // Delete the draft and save as active project
+            await db.deleteProject('current-draft')
+            await db.saveProject(activeProject)
+          } else {
+            // Fallback: create new project if draft doesn't exist
+            const newProject: Project = {
+              id: Date.now().toString(),
+              name: projectName.trim(),
+              platform: selectedPlatform,
+              createdAt: new Date(),
+              lastModified: new Date(),
+              status: 'active',
+              repositoryUrl: platform.url !== '#' ? platform.url + encodeURIComponent(projectName.trim()) : undefined
+            }
+            await db.saveProject(newProject)
           }
-        } else {
-          // Fallback: create new project if draft doesn't exist
-          const newProject = {
-            id: Date.now().toString(),
-            name: projectName.trim(),
-            platform: selectedPlatform,
-            createdAt: new Date(),
-            lastModified: new Date(),
-            status: 'active' as const,
-            repositoryUrl: platform.url !== '#' ? platform.url + encodeURIComponent(projectName.trim()) : undefined
-          }
-          existingProjects.push(newProject)
+        } catch (error) {
+          console.error('Failed to create project:', error)
         }
-        
-        localStorage.setItem('createstack-projects', JSON.stringify(existingProjects))
 
         if (platform.id === "gitea") {
           alert("Gitea/Gogs requires self-hosting. Please visit your self-hosted instance to create a repository.")
@@ -983,11 +1000,39 @@ ${getComplianceDetails(selectedPlatform)}`
       variant="default"
       onClick={clearSavedData}
       className="flex items-center space-x-2"
+      disabled={!isReady}
     >
       <span>+</span>
       <span>New Project</span>
     </Button>
   )
+
+  if (error) {
+    return (
+      <AppLayout 
+        title="Project" 
+        description="Database Error"
+      >
+        <div className="text-center py-8">
+          <p className="text-red-600">Failed to initialize database: {error}</p>
+          <p className="text-sm text-muted-foreground mt-2">Please refresh the page to try again.</p>
+        </div>
+      </AppLayout>
+    )
+  }
+
+  if (!isReady) {
+    return (
+      <AppLayout 
+        title="Project" 
+        description="Loading..."
+      >
+        <div className="text-center py-8">
+          <p>Initializing database...</p>
+        </div>
+      </AppLayout>
+    )
+  }
 
   return (
     <AppLayout 
