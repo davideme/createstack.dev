@@ -34,3 +34,15 @@ export interface VendorDetails {
   securityCertifications: string;
   references: string;
 }
+
+export interface DocumentationTool {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  platform: string;
+  bestFor: string;
+  pricing: string;
+  features: string[];
+  url: string;
+}

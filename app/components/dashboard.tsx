@@ -12,11 +12,12 @@ import { useDB, db } from "~/lib/db"
 // Data imports
 import { platforms } from "~/data/platforms"
 import { dependencyTools, getAvailableDependencyTools, getDependencyToolDocumentationUrl, isDependencyToolNativeToPlatform } from "~/data/dependency-tools"
+import { documentationTools, getAvailableDocumentationTools, getDocumentationToolUrl, isDocumentationToolNativeToPlatform } from "~/data/documentation-tools"
 
 // Utility imports
 import { generateTerraformCode, generatePulumiCode, generateCloudFormationCode, generateCDKCode } from "~/utils/code-generators"
-import { generateADR, generateDependencyADR } from "~/utils/adr-generators"
-import { generateVendorComparison, generateDependencyVendorComparison } from "~/utils/vendor-utils"
+import { generateADR, generateDependencyADR, generateDocumentationADR } from "~/utils/adr-generators"
+import { generateVendorComparison, generateDependencyVendorComparison, generateDocumentationVendorComparison } from "~/utils/vendor-utils"
 
 export default function Dashboard() {
   const [projectName, setProjectName] = useState("")
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [selectedDepTool, setSelectedDepTool] = useState("dependabot")
+  const [selectedDocTool, setSelectedDocTool] = useState("readme")
   const { isReady, error } = useDB()
 
   // Load saved data on component mount
@@ -35,6 +37,8 @@ export default function Dashboard() {
       try {
         const savedProjectName = await db.getPreference('currentProjectName')
         const savedPlatform = await db.getPreference('selectedPlatform')
+        const savedDepTool = await db.getPreference('selectedDepTool')
+        const savedDocTool = await db.getPreference('selectedDocTool')
         const savedTime = await db.getPreference('lastSaved')
         
         if (savedProjectName) {
@@ -43,6 +47,14 @@ export default function Dashboard() {
         
         if (savedPlatform) {
           setSelectedPlatform(savedPlatform)
+        }
+
+        if (savedDepTool) {
+          setSelectedDepTool(savedDepTool)
+        }
+
+        if (savedDocTool) {
+          setSelectedDocTool(savedDocTool)
         }
         
         if (savedTime) {
@@ -70,6 +82,22 @@ export default function Dashboard() {
       setSelectedDepTool(platformSpecificTool?.id || availableTools[0].id)
     }
   }, [selectedPlatform, selectedDepTool])
+
+  // Reset documentation tool selection when platform changes if current selection is not available
+  useEffect(() => {
+    const availableDocTools = getAvailableDocumentationTools(selectedPlatform)
+    const isCurrentDocToolAvailable = availableDocTools.some(tool => tool.id === selectedDocTool)
+    
+    if (!isCurrentDocToolAvailable && availableDocTools.length > 0) {
+      // Set to platform-specific tool or README as fallback
+      const platformSpecificTool = availableDocTools.find(tool => 
+        (selectedPlatform === 'github' && tool.id === 'github-wiki') ||
+        (selectedPlatform === 'gitlab' && tool.id === 'gitlab-wiki') ||
+        (tool.id === 'readme')
+      )
+      setSelectedDocTool(platformSpecificTool?.id || availableDocTools[0].id)
+    }
+  }, [selectedPlatform, selectedDocTool])
 
   const handleCreateRepository = async () => {
     if (projectName.trim()) {
@@ -103,6 +131,15 @@ export default function Dashboard() {
     }
   }
 
+  const handleConfigureDocTool = () => {
+    const url = getDocumentationToolUrl(selectedDocTool)
+    if (url !== "#") {
+      window.open(url, '_blank')
+    } else {
+      alert("This documentation tool requires manual setup. Please refer to the tool's official documentation.")
+    }
+  }
+
   const saveData = async () => {
     if (!isReady) return
 
@@ -111,6 +148,7 @@ export default function Dashboard() {
       await db.setPreference('currentProjectName', projectName)
       await db.setPreference('selectedPlatform', selectedPlatform)
       await db.setPreference('selectedDepTool', selectedDepTool)
+      await db.setPreference('selectedDocTool', selectedDocTool)
       await db.setPreference('lastSaved', new Date().toISOString())
       setLastSaved(new Date())
     } catch (error) {
@@ -128,11 +166,13 @@ export default function Dashboard() {
       await db.setPreference('currentProjectName', '')
       await db.setPreference('selectedPlatform', 'github')
       await db.setPreference('selectedDepTool', 'dependabot')
+      await db.setPreference('selectedDocTool', 'readme')
       await db.setPreference('lastSaved', '')
       
       setProjectName("")
       setSelectedPlatform("github")
       setSelectedDepTool("dependabot")
+      setSelectedDocTool("readme")
       setLastSaved(null)
       setShowIaC(false)
     } catch (error) {
@@ -142,11 +182,11 @@ export default function Dashboard() {
 
   // Auto-save when data changes
   useEffect(() => {
-    if (isReady && (projectName || selectedPlatform !== "github" || selectedDepTool !== "dependabot")) {
+    if (isReady && (projectName || selectedPlatform !== "github" || selectedDepTool !== "dependabot" || selectedDocTool !== "readme")) {
       const timeoutId = setTimeout(saveData, 1000)
       return () => clearTimeout(timeoutId)
     }
-  }, [projectName, selectedPlatform, selectedDepTool, isReady])
+  }, [projectName, selectedPlatform, selectedDepTool, selectedDocTool, isReady])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -633,6 +673,129 @@ export default function Dashboard() {
                     </ScrollArea>
                   </TabsContent>
                 </Tabs>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Documentation Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <span className="text-xl">{documentationTools.find(t => t.id === selectedDocTool)?.emoji}</span>
+              <span>Documentation</span>
+              {isSaving && (
+                <div className="flex items-center space-x-1 ml-auto">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                  <span className="text-xs text-muted-foreground font-normal">Saving...</span>
+                </div>
+              )}
+            </CardTitle>
+            <CardDescription className="flex items-center justify-between">
+              <span>Create and maintain project documentation</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSavedData}
+                className="text-xs h-6 px-2"
+              >
+                Clear All
+              </Button>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="doc-tool-select" className="text-sm font-medium">
+                Documentation Tool
+              </label>
+              <Select value={selectedDocTool} onValueChange={setSelectedDocTool}>
+                <SelectTrigger id="doc-tool-select">
+                  <SelectValue placeholder="Select a documentation tool" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableDocumentationTools(selectedPlatform).map((tool) => (
+                    <SelectItem key={tool.id} value={tool.id}>
+                      <div className="flex items-center space-x-2">
+                        <span>{tool.emoji}</span>
+                        <span>{tool.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Tool Info */}
+            <div className="p-3 bg-muted rounded-lg">
+              <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
+                <span>{documentationTools.find(t => t.id === selectedDocTool)?.emoji}</span>
+                <span>{documentationTools.find(t => t.id === selectedDocTool)?.name}</span>
+              </h4>
+              <p className="text-xs text-muted-foreground mb-1">
+                {documentationTools.find(t => t.id === selectedDocTool)?.description}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <strong>Best for:</strong> {documentationTools.find(t => t.id === selectedDocTool)?.bestFor}
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button 
+                className="flex items-center space-x-2"
+                disabled={!projectName.trim()}
+                onClick={handleConfigureDocTool}
+              >
+                <span>{documentationTools.find(t => t.id === selectedDocTool)?.emoji}</span>
+                <span>Setup Documentation</span>
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* ADR Section */}
+            {projectName.trim() && (
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">📝 Architecture Decision Record</h4>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(generateDocumentationADR(projectName, selectedDocTool, documentationTools))}
+                  >
+                    Copy ADR
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Document your documentation platform decision for future reference
+                </p>
+              </div>
+            )}
+
+            {/* Vendor Entry Section */}
+            {projectName.trim() && (
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">📊 Vendor Entry</h4>
+                  {!isDocumentationToolNativeToPlatform(selectedPlatform, selectedDocTool) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copyToClipboard(generateDocumentationVendorComparison(projectName, selectedDocTool, documentationTools))}
+                    >
+                      Copy Vendor Row
+                    </Button>
+                  )}
+                </div>
+                {isDocumentationToolNativeToPlatform(selectedPlatform, selectedDocTool) ? (
+                  <div className="p-2 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-xs text-green-700">
+                      ✅ <strong>{documentationTools.find(t => t.id === selectedDocTool)?.name}</strong> is already included with {platforms.find(p => p.id === selectedPlatform)?.name}. No separate vendor evaluation needed.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Vendor entry for <strong>{documentationTools.find(t => t.id === selectedDocTool)?.name}</strong> ready for your evaluation spreadsheet
+                  </p>
+                )}
               </div>
             )}
           </CardContent>
