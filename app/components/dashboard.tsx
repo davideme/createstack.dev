@@ -1193,6 +1193,165 @@ Status: Under evaluation
 ${getComplianceDetails(selectedPlatform)}`
   }
 
+  const generateDependencyVendorComparison = () => {
+    const tool = dependencyTools.find(t => t.id === selectedDepTool)
+    const repoName = projectName.trim() || "my-project"
+    const currentDate = new Date().toISOString().split('T')[0]
+    
+    if (!tool) return ""
+    
+    // Get detailed vendor information for the selected dependency tool
+    const vendorDetails = getDependencyVendorDetails(selectedDepTool)
+    
+    // Generate single row entry with universal vendor evaluation criteria
+    const vendorRow = [
+      vendorDetails.vendorName,
+      vendorDetails.company,
+      vendorDetails.productService,
+      vendorDetails.pricingModel,
+      vendorDetails.contractTerms,
+      vendorDetails.supportSLA,
+      vendorDetails.compliance,
+      vendorDetails.dataResidency,
+      vendorDetails.businessStability,
+      vendorDetails.marketPosition,
+      vendorDetails.integrationCapability,
+      vendorDetails.scalability,
+      vendorDetails.securityCertifications,
+      vendorDetails.references,
+      repoName,
+      currentDate,
+      "Under Evaluation"
+    ].join('\t')
+    
+    return `${vendorRow}
+
+# Vendor Entry Details for ${tool.name}
+Project: ${repoName}
+Evaluation Date: ${currentDate}
+Status: Under evaluation
+Tool Type: Dependency Management
+
+# Instructions:
+1. Copy the tab-separated row above
+2. Paste into your vendor evaluation spreadsheet
+3. The row includes: Vendor Name, Company, Product/Service, Pricing Model, Contract Terms, Support SLA, Compliance, Data Residency, Business Stability, Market Position, Integration Capability, Scalability, Security Certifications, References, Project Name, Evaluation Date, Status
+
+# Tool Summary for ${tool.name}:
+- Platform: ${tool.platform}
+- Pricing: ${tool.pricing}
+- Best For: ${tool.bestFor}
+- Key Features: ${tool.features.join(', ')}`
+  }
+
+  const getDependencyVendorDetails = (toolId: string) => {
+    const details = {
+      dependabot: {
+        vendorName: "Dependabot",
+        company: "Microsoft Corporation (GitHub)",
+        productService: "Automated Dependency Updates",
+        pricingModel: "Free with GitHub",
+        contractTerms: "GitHub Terms of Service",
+        supportSLA: "Community + GitHub Support",
+        compliance: "SOC 2, ISO 27001, GDPR",
+        dataResidency: "Global (GitHub infrastructure)",
+        businessStability: "High (Microsoft-backed)",
+        marketPosition: "Leading (GitHub integration)",
+        integrationCapability: "Excellent (native GitHub)",
+        scalability: "Excellent",
+        securityCertifications: "SOC 2, ISO 27001",
+        references: "github.com/dependabot"
+      },
+      renovate: {
+        vendorName: "Renovate",
+        company: "Mend.io (formerly WhiteSource)",
+        productService: "Universal Dependency Updates",
+        pricingModel: "Free (self-hosted) / SaaS plans",
+        contractTerms: "OSS license / Commercial terms",
+        supportSLA: "Community / Commercial support",
+        compliance: "SOC 2, GDPR compliant",
+        dataResidency: "Configurable / EU/US options",
+        businessStability: "High (Mend.io backing)",
+        marketPosition: "Strong (multi-platform)",
+        integrationCapability: "Excellent (60+ platforms)",
+        scalability: "Excellent",
+        securityCertifications: "SOC 2, ISO 27001",
+        references: "renovatebot.com"
+      },
+      snyk: {
+        vendorName: "Snyk",
+        company: "Snyk Ltd",
+        productService: "Security-focused Dependency Scanning",
+        pricingModel: "Freemium / Pro from $25/month",
+        contractTerms: "Standard SaaS / Enterprise",
+        supportSLA: "Tiered support (Free/Pro/Enterprise)",
+        compliance: "SOC 2, ISO 27001, GDPR",
+        dataResidency: "Multi-region options",
+        businessStability: "High (well-funded startup)",
+        marketPosition: "Leading (security focus)",
+        integrationCapability: "Excellent (CI/CD + IDEs)",
+        scalability: "Excellent",
+        securityCertifications: "SOC 2, ISO 27001",
+        references: "snyk.io"
+      },
+      whitesource: {
+        vendorName: "Mend",
+        company: "Mend.io (formerly WhiteSource)",
+        productService: "Enterprise Dependency Management",
+        pricingModel: "Enterprise pricing (contact sales)",
+        contractTerms: "Enterprise license agreements",
+        supportSLA: "Enterprise support included",
+        compliance: "SOC 2, ISO 27001, GDPR, HIPAA",
+        dataResidency: "Multi-region / on-premise",
+        businessStability: "High (established enterprise)",
+        marketPosition: "Leading (enterprise segment)",
+        integrationCapability: "Excellent (200+ languages)",
+        scalability: "Enterprise-grade",
+        securityCertifications: "SOC 2, ISO 27001, FedRAMP",
+        references: "mend.io"
+      },
+      "gitlab-deps": {
+        vendorName: "GitLab Dependency Scanning",
+        company: "GitLab Inc",
+        productService: "Integrated Dependency Scanning",
+        pricingModel: "Free tier / Premium from $19/user",
+        contractTerms: "GitLab Terms of Service",
+        supportSLA: "Tiered support (Free/Premium/Ultimate)",
+        compliance: "SOC 2, ISO 27001, GDPR",
+        dataResidency: "Global / GitLab.com or self-hosted",
+        businessStability: "High (public company)",
+        marketPosition: "Strong (DevOps platform)",
+        integrationCapability: "Excellent (GitLab native)",
+        scalability: "Excellent",
+        securityCertifications: "SOC 2, ISO 27001",
+        references: "gitlab.com"
+      },
+      manual: {
+        vendorName: "Manual Process",
+        company: "Internal Team",
+        productService: "Manual Dependency Management",
+        pricingModel: "Developer time costs",
+        contractTerms: "Internal process",
+        supportSLA: "Internal team capacity",
+        compliance: "Depends on internal practices",
+        dataResidency: "Internal control",
+        businessStability: "Depends on team availability",
+        marketPosition: "Traditional approach",
+        integrationCapability: "Manual integration required",
+        scalability: "Limited by team capacity",
+        securityCertifications: "None (manual process)",
+        references: "Internal documentation"
+      }
+    }
+    
+    return details[toolId as keyof typeof details] || details.manual
+  }
+
+  const isDependencyToolNativeToPlatform = () => {
+    return (selectedPlatform === 'github' && selectedDepTool === 'dependabot') ||
+           (selectedPlatform === 'gitlab' && selectedDepTool === 'gitlab-deps')
+  }
+
   const getVendorDetails = (platformId: string) => {
     const details = {
       github: {
@@ -1746,22 +1905,32 @@ ${getComplianceDetails(selectedPlatform)}`
                   </div>
                 )}
 
-                {/* Vendor Comparison Section */}
+                {/* Vendor Entry Section */}
                 {projectName.trim() && (
                   <div className="space-y-2 border-t pt-4">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-medium">📊 Vendor Entry</h4>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(generateVendorComparison())}
-                      >
-                        Copy Vendor Row
-                      </Button>
+                      {!isDependencyToolNativeToPlatform() && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => copyToClipboard(generateDependencyVendorComparison())}
+                        >
+                          Copy Vendor Row
+                        </Button>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Single vendor entry ready for your evaluation spreadsheet
-                    </p>
+                    {isDependencyToolNativeToPlatform() ? (
+                      <div className="p-2 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-xs text-green-700">
+                          ✅ <strong>{dependencyTools.find(t => t.id === selectedDepTool)?.name}</strong> is already included with {platforms.find(p => p.id === selectedPlatform)?.name}. No separate vendor evaluation needed.
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Vendor entry for <strong>{dependencyTools.find(t => t.id === selectedDepTool)?.name}</strong> ready for your evaluation spreadsheet
+                      </p>
+                    )}
                   </div>
                 )}
 
