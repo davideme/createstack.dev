@@ -38,12 +38,26 @@ export default function Dashboard() {
     return false
   })
 
+  const [defaultIaCTool, setDefaultIaCTool] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('createstack-defaultIaCTool')
+      return saved ? JSON.parse(saved) : 'terraform'
+    }
+    return 'terraform'
+  })
+
   // Save UI preferences to localStorage when changed
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('createstack-showIaC', JSON.stringify(showIaC))
     }
   }, [showIaC])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('createstack-defaultIaCTool', JSON.stringify(defaultIaCTool))
+    }
+  }, [defaultIaCTool])
 
   // Load current project data when available
   useEffect(() => {
@@ -354,7 +368,7 @@ export default function Dashboard() {
               <div className="space-y-4 border-t pt-4">
                 <h4 className="text-sm font-medium">Infrastructure as Code Templates</h4>
                 
-                <Tabs defaultValue="terraform" className="w-full">
+                <Tabs defaultValue={defaultIaCTool} onValueChange={setDefaultIaCTool} className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="terraform">Terraform</TabsTrigger>
                     <TabsTrigger value="pulumi">Pulumi</TabsTrigger>
@@ -551,7 +565,7 @@ export default function Dashboard() {
               <div className="space-y-4 border-t pt-4">
                 <h4 className="text-sm font-medium">Configuration as Code Templates</h4>
                 
-                <Tabs defaultValue="terraform" className="w-full">
+                <Tabs defaultValue={defaultIaCTool} onValueChange={setDefaultIaCTool} className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="terraform">Terraform</TabsTrigger>
                     <TabsTrigger value="pulumi">Pulumi</TabsTrigger>
