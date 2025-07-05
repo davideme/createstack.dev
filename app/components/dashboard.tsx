@@ -253,18 +253,8 @@ export default function Dashboard() {
                 </div>
               )}
             </CardTitle>
-            <CardDescription className="flex items-center justify-between">
-              <span>Create a new repository for your project on your preferred platform</span>
-              {(projectName.trim() || selectedPlatform !== "github") && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSavedData}
-                  className="text-xs h-6 px-2"
-                >
-                  Clear All
-                </Button>
-              )}
+            <CardDescription>
+              Create a new repository for your project on your preferred platform
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -480,16 +470,8 @@ export default function Dashboard() {
                 </div>
               )}
             </CardTitle>
-            <CardDescription className="flex items-center justify-between">
-              <span>Manage your project dependencies and automate updates</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearSavedData}
-                className="text-xs h-6 px-2"
-              >
-                Clear All
-              </Button>
+            <CardDescription>
+              Manage your project dependencies and automate updates
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -691,16 +673,8 @@ export default function Dashboard() {
                 </div>
               )}
             </CardTitle>
-            <CardDescription className="flex items-center justify-between">
-              <span>Create and maintain project documentation</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearSavedData}
-                className="text-xs h-6 px-2"
-              >
-                Clear All
-              </Button>
+            <CardDescription>
+              Create and maintain project documentation
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
