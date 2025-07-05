@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { Input } from "~/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { ScrollArea } from "~/components/ui/scroll-area"
+import { SavingIndicator } from "~/components/ui/saving-indicator"
 import { AppLayout } from "~/components/shared/app-layout"
 import { ExternalLink } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -195,15 +196,18 @@ export default function Dashboard() {
   }
 
   const clearSavedDataAction = (
-    <Button 
-      variant="default"
-      onClick={clearSavedData}
-      className="flex items-center space-x-2"
-      disabled={!isReady}
-    >
-      <span>+</span>
-      <span>New Project</span>
-    </Button>
+    <div className="flex items-center space-x-3">
+      <SavingIndicator isSaving={isSaving} />
+      <Button 
+        variant="default"
+        onClick={clearSavedData}
+        className="flex items-center space-x-2"
+        disabled={!isReady}
+      >
+        <span>+</span>
+        <span>New Project</span>
+      </Button>
+    </div>
   )
 
   if (error) {
@@ -246,12 +250,6 @@ export default function Dashboard() {
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">{platforms.find(p => p.id === selectedPlatform)?.emoji}</span>
               <span>Code Hosting</span>
-              {isSaving && (
-                <div className="flex items-center space-x-1 ml-auto">
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                  <span className="text-xs text-muted-foreground font-normal">Saving...</span>
-                </div>
-              )}
             </CardTitle>
             <CardDescription>
               Create a new repository for your project on your preferred platform
@@ -463,12 +461,6 @@ export default function Dashboard() {
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">{dependencyTools.find(t => t.id === selectedDepTool)?.emoji}</span>
               <span>Dependencies Management</span>
-              {isSaving && (
-                <div className="flex items-center space-x-1 ml-auto">
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                  <span className="text-xs text-muted-foreground font-normal">Saving...</span>
-                </div>
-              )}
             </CardTitle>
             <CardDescription>
               Manage your project dependencies and automate updates
@@ -666,12 +658,6 @@ export default function Dashboard() {
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">{documentationTools.find(t => t.id === selectedDocTool)?.emoji}</span>
               <span>Documentation</span>
-              {isSaving && (
-                <div className="flex items-center space-x-1 ml-auto">
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                  <span className="text-xs text-muted-foreground font-normal">Saving...</span>
-                </div>
-              )}
             </CardTitle>
             <CardDescription>
               Create and maintain project documentation
