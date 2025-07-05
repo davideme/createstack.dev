@@ -8,7 +8,7 @@ import { SavingIndicator } from "~/components/ui/saving-indicator"
 import { AppLayout } from "~/components/shared/app-layout"
 import { ExternalLink } from "lucide-react"
 import { useState, useEffect } from "react"
-import { useDB, db } from "~/lib/db"
+import { useDB, useCurrentProject } from "~/lib/db"
 
 // Data imports
 import { platforms } from "~/data/platforms"
@@ -23,51 +23,37 @@ import { generateVendorComparison, generateDependencyVendorComparison, generateD
 export default function Dashboard() {
   const [projectName, setProjectName] = useState("")
   const [selectedPlatform, setSelectedPlatform] = useState("github")
-  const [showIaC, setShowIaC] = useState(false)
-  const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
   const [selectedDepTool, setSelectedDepTool] = useState("dependabot")
   const [selectedDocTool, setSelectedDocTool] = useState("readme")
+  const [isSaving, setIsSaving] = useState(false)
   const { isReady, error } = useDB()
+  const { currentProject, saveCurrentProject, clearCurrentProject } = useCurrentProject()
 
-  // Load saved data on component mount
-  useEffect(() => {
-    if (!isReady) return;
-
-    const loadPreferences = async () => {
-      try {
-        const savedProjectName = await db.getPreference('currentProjectName')
-        const savedPlatform = await db.getPreference('selectedPlatform')
-        const savedDepTool = await db.getPreference('selectedDepTool')
-        const savedDocTool = await db.getPreference('selectedDocTool')
-        const savedTime = await db.getPreference('lastSaved')
-        
-        if (savedProjectName) {
-          setProjectName(savedProjectName)
-        }
-        
-        if (savedPlatform) {
-          setSelectedPlatform(savedPlatform)
-        }
-
-        if (savedDepTool) {
-          setSelectedDepTool(savedDepTool)
-        }
-
-        if (savedDocTool) {
-          setSelectedDocTool(savedDocTool)
-        }
-        
-        if (savedTime) {
-          setLastSaved(new Date(savedTime))
-        }
-      } catch (error) {
-        console.error('Failed to load preferences:', error)
-      }
+  // Load UI preferences from localStorage
+  const [showIaC, setShowIaC] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('createstack-showIaC')
+      return saved ? JSON.parse(saved) : false
     }
+    return false
+  })
 
-    loadPreferences()
-  }, [isReady])
+  // Save UI preferences to localStorage when changed
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('createstack-showIaC', JSON.stringify(showIaC))
+    }
+  }, [showIaC])
+
+  // Load current project data when available
+  useEffect(() => {
+    if (currentProject) {
+      setProjectName(currentProject.name)
+      setSelectedPlatform(currentProject.platform)
+      setSelectedDepTool(currentProject.dependencyTool)
+      setSelectedDocTool(currentProject.documentationTool)
+    }
+  }, [currentProject])
 
   // Reset dependency tool selection when platform changes if current selection is not available
   useEffect(() => {
@@ -105,11 +91,13 @@ export default function Dashboard() {
       const platform = platforms.find(p => p.id === selectedPlatform)
       if (platform) {
         try {
-          // Save current preferences
-          await db.setPreference('currentProjectName', projectName.trim())
-          await db.setPreference('selectedPlatform', selectedPlatform)
-          await db.setPreference('lastSaved', new Date().toISOString())
-          setLastSaved(new Date())
+          // Save current project data to IndexedDB
+          await saveCurrentProject({
+            name: projectName.trim(),
+            platform: selectedPlatform,
+            dependencyTool: selectedDepTool,
+            documentationTool: selectedDocTool
+          })
 
           // Open the platform URL
           const url = platform.url === '#' ? '#' : platform.url + encodeURIComponent(projectName.trim())
@@ -142,16 +130,16 @@ export default function Dashboard() {
   }
 
   const saveData = async () => {
-    if (!isReady) return
+    if (!isReady || !projectName.trim()) return
 
     setIsSaving(true)
     try {
-      await db.setPreference('currentProjectName', projectName)
-      await db.setPreference('selectedPlatform', selectedPlatform)
-      await db.setPreference('selectedDepTool', selectedDepTool)
-      await db.setPreference('selectedDocTool', selectedDocTool)
-      await db.setPreference('lastSaved', new Date().toISOString())
-      setLastSaved(new Date())
+      await saveCurrentProject({
+        name: projectName.trim(),
+        platform: selectedPlatform,
+        dependencyTool: selectedDepTool,
+        documentationTool: selectedDocTool
+      })
     } catch (error) {
       console.error('Failed to save data:', error)
     } finally {
@@ -163,18 +151,14 @@ export default function Dashboard() {
     if (!isReady) return
 
     try {
-      // Clear individual preferences
-      await db.setPreference('currentProjectName', '')
-      await db.setPreference('selectedPlatform', 'github')
-      await db.setPreference('selectedDepTool', 'dependabot')
-      await db.setPreference('selectedDocTool', 'readme')
-      await db.setPreference('lastSaved', '')
+      // Clear current project
+      await clearCurrentProject()
       
+      // Reset form state
       setProjectName("")
       setSelectedPlatform("github")
       setSelectedDepTool("dependabot")
       setSelectedDocTool("readme")
-      setLastSaved(null)
       setShowIaC(false)
     } catch (error) {
       console.error('Failed to clear data:', error)
@@ -183,7 +167,7 @@ export default function Dashboard() {
 
   // Auto-save when data changes
   useEffect(() => {
-    if (isReady && (projectName || selectedPlatform !== "github" || selectedDepTool !== "dependabot" || selectedDocTool !== "readme")) {
+    if (isReady && (projectName || selectedPlatform || selectedDepTool || selectedDocTool)) {
       const timeoutId = setTimeout(saveData, 1000)
       return () => clearTimeout(timeoutId)
     }
