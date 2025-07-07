@@ -172,7 +172,7 @@ export default function Projects() {
       },
     },
     {
-      accessorKey: "lastSaved",
+      accessorKey: "lastModified",
       header: ({ column }) => {
         return (
           <Button
@@ -180,13 +180,13 @@ export default function Projects() {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             <Clock className="mr-2 h-4 w-4" />
-            Last Saved
+            Last Modified
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         )
       },
       cell: ({ row }) => {
-        const date = row.getValue("lastSaved") as Date;
+        const date = row.getValue("lastModified") as Date;
         return (
           <div className="text-sm text-muted-foreground">
             {getRelativeTime(date)}

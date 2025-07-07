@@ -9,7 +9,6 @@ export interface Project {
   platform: string;
   dependencyTool: string;
   documentationTool: string;
-  lastSaved: Date;
   createdAt: Date;
   lastModified: Date;
   status: 'active' | 'archived' | 'draft';
@@ -57,6 +56,14 @@ class CreateStackDB {
     }
   }
 
+  private convertDates(project: any): Project {
+    return {
+      ...project,
+      createdAt: new Date(project.createdAt),
+      lastModified: new Date(project.lastModified)
+    };
+  }
+
   // Project operations
   async saveProject(project: Project): Promise<void> {
     this.ensureConnection();
@@ -68,6 +75,7 @@ class CreateStackDB {
       const request = store.put({
         ...project,
         lastModified: new Date()
+        // Note: lastSaved should only be updated in user-initiated saves
       });
 
       request.onerror = () => reject(request.error);
@@ -88,11 +96,11 @@ class CreateStackDB {
         const result = request.result;
         if (result) {
           // Convert date strings back to Date objects
-          result.createdAt = new Date(result.createdAt);
-          result.lastModified = new Date(result.lastModified);
-          result.lastSaved = new Date(result.lastSaved);
+          const project = this.convertDates(result);
+          resolve(project);
+        } else {
+          resolve(null);
         }
-        resolve(result || null);
       };
     });
   }
@@ -107,12 +115,7 @@ class CreateStackDB {
 
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
-        const results = request.result.map((project: any) => ({
-          ...project,
-          createdAt: new Date(project.createdAt),
-          lastModified: new Date(project.lastModified),
-          lastSaved: new Date(project.lastSaved)
-        }));
+        const results = request.result.map((project: any) => this.convertDates(project));
         resolve(results);
       };
     });
@@ -129,12 +132,7 @@ class CreateStackDB {
 
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
-        const results = request.result.map((project: any) => ({
-          ...project,
-          createdAt: new Date(project.createdAt),
-          lastModified: new Date(project.lastModified),
-          lastSaved: new Date(project.lastSaved)
-        }));
+        const results = request.result.map((project: any) => this.convertDates(project));
         resolve(results);
       };
     });
@@ -193,7 +191,6 @@ class CreateStackDB {
         platform: projectData.platform,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
-        lastSaved: new Date(),
         lastModified: new Date()
       };
       await this.saveProject(updatedProject);
@@ -206,7 +203,6 @@ class CreateStackDB {
         platform: projectData.platform,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
-        lastSaved: new Date(),
         createdAt: new Date(),
         lastModified: new Date(),
         status: 'draft'
@@ -229,11 +225,31 @@ class CreateStackDB {
   }
 
   async importData(jsonData: string): Promise<void> {
-    const data = JSON.parse(jsonData);
-    
-    // Import projects
-    for (const project of data.projects || []) {
-      await this.saveProject(project);
+    try {
+      const data = JSON.parse(jsonData);
+      
+      // Validate data structure
+      if (!data.projects || !Array.isArray(data.projects)) {
+        throw new Error('Invalid data format: projects array is required');
+      }
+      
+      // Import projects
+      for (const project of data.projects) {
+        // Ensure required fields exist
+        if (!project.id || !project.name || !project.platform) {
+          console.warn('Skipping invalid project:', project);
+          continue;
+        }
+        
+        await this.saveProject({
+          ...project,
+          createdAt: project.createdAt ? new Date(project.createdAt) : new Date(),
+          lastModified: project.lastModified ? new Date(project.lastModified) : new Date()
+        });
+      }
+    } catch (error) {
+      console.error('Failed to import data:', error);
+      throw new Error(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }
