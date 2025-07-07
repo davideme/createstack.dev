@@ -12,6 +12,7 @@ import { useDB, useCurrentProject } from "~/lib/db"
 
 // Data imports
 import { platforms } from "~/data/platforms"
+import { projectTypes, getProjectType } from "~/data/project-types"
 import { dependencyTools, getAvailableDependencyTools, getDependencyToolDocumentationUrl, isDependencyToolNativeToPlatform } from "~/data/dependency-tools"
 import { documentationTools, getAvailableDocumentationTools, getDocumentationToolUrl, isDocumentationToolNativeToPlatform } from "~/data/documentation-tools"
 
@@ -23,6 +24,7 @@ import { generateVendorComparison, generateDependencyVendorComparison, generateD
 export default function Dashboard() {
   const [projectName, setProjectName] = useState("")
   const [selectedPlatform, setSelectedPlatform] = useState("github")
+  const [selectedProjectType, setSelectedProjectType] = useState("web-app")
   const [selectedDepTool, setSelectedDepTool] = useState("dependabot")
   const [selectedDocTool, setSelectedDocTool] = useState("readme")
   const [isSaving, setIsSaving] = useState(false)
@@ -64,6 +66,7 @@ export default function Dashboard() {
     if (currentProject) {
       setProjectName(currentProject.name)
       setSelectedPlatform(currentProject.platform)
+      setSelectedProjectType(currentProject.projectType || "web-app")
       setSelectedDepTool(currentProject.dependencyTool)
       setSelectedDocTool(currentProject.documentationTool)
     }
@@ -109,6 +112,7 @@ export default function Dashboard() {
           await saveCurrentProject({
             name: projectName.trim(),
             platform: selectedPlatform,
+            projectType: selectedProjectType,
             dependencyTool: selectedDepTool,
             documentationTool: selectedDocTool
           })
@@ -151,6 +155,7 @@ export default function Dashboard() {
       await saveCurrentProject({
         name: projectName.trim(),
         platform: selectedPlatform,
+        projectType: selectedProjectType,
         dependencyTool: selectedDepTool,
         documentationTool: selectedDocTool
       })
@@ -171,6 +176,7 @@ export default function Dashboard() {
       // Reset form state
       setProjectName("")
       setSelectedPlatform("github")
+      setSelectedProjectType("web-app")
       setSelectedDepTool("dependabot")
       setSelectedDocTool("readme")
       setShowIaC(false)
@@ -181,11 +187,11 @@ export default function Dashboard() {
 
   // Auto-save when data changes
   useEffect(() => {
-    if (isReady && (projectName || selectedPlatform || selectedDepTool || selectedDocTool)) {
+    if (isReady && (projectName || selectedPlatform || selectedProjectType || selectedDepTool || selectedDocTool)) {
       const timeoutId = setTimeout(saveData, 1000)
       return () => clearTimeout(timeoutId)
     }
-  }, [projectName, selectedPlatform, selectedDepTool, selectedDocTool, isReady])
+  }, [projectName, selectedPlatform, selectedProjectType, selectedDepTool, selectedDocTool, isReady])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -242,6 +248,61 @@ export default function Dashboard() {
       headerActions={clearSavedDataAction}
     >
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Project Type Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <span className="text-xl">{projectTypes.find(p => p.id === selectedProjectType)?.emoji}</span>
+              <span>Project Type</span>
+            </CardTitle>
+            <CardDescription>
+              Choose the type of project you're building to get tailored recommendations
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="project-type-select" className="text-sm font-medium">
+                Project Type
+              </label>
+              <Select value={selectedProjectType} onValueChange={setSelectedProjectType}>
+                <SelectTrigger id="project-type-select">
+                  <SelectValue placeholder="Select a project type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projectTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.id}>
+                      <div className="flex items-center space-x-2">
+                        <span>{type.emoji}</span>
+                        <span>{type.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Project Type Info */}
+            <div className="p-3 bg-muted rounded-lg">
+              <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
+                <span>{projectTypes.find(p => p.id === selectedProjectType)?.emoji}</span>
+                <span>{projectTypes.find(p => p.id === selectedProjectType)?.name}</span>
+              </h4>
+              <p className="text-xs text-muted-foreground mb-2">
+                {projectTypes.find(p => p.id === selectedProjectType)?.description}
+              </p>
+              <p className="text-xs text-muted-foreground mb-2">
+                <strong>Best for:</strong> {projectTypes.find(p => p.id === selectedProjectType)?.bestFor}
+              </p>
+              <p className="text-xs text-muted-foreground mb-2">
+                <strong>Common Stacks:</strong> {projectTypes.find(p => p.id === selectedProjectType)?.commonStacks.join(", ")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <strong>Timeline:</strong> {projectTypes.find(p => p.id === selectedProjectType)?.estimatedTimeline}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Code Hosting Card */}
         <Card>
           <CardHeader>

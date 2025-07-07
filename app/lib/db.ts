@@ -7,6 +7,7 @@ export interface Project {
   id: string;
   name: string;
   platform: string;
+  projectType: string;
   dependencyTool: string;
   documentationTool: string;
   createdAt: Date;
@@ -178,6 +179,7 @@ class CreateStackDB {
   async saveCurrentProject(projectData: {
     name: string;
     platform: string;
+    projectType: string;
     dependencyTool: string;
     documentationTool: string;
   }): Promise<Project> {
@@ -189,6 +191,7 @@ class CreateStackDB {
         ...currentProject,
         name: projectData.name,
         platform: projectData.platform,
+        projectType: projectData.projectType,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
         lastModified: new Date()
@@ -201,6 +204,7 @@ class CreateStackDB {
         id: crypto.randomUUID(),
         name: projectData.name,
         platform: projectData.platform,
+        projectType: projectData.projectType,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
         createdAt: new Date(),
@@ -350,6 +354,7 @@ export function useCurrentProject() {
   const saveCurrentProject = async (projectData: {
     name: string;
     platform: string;
+    projectType: string;
     dependencyTool: string;
     documentationTool: string;
   }) => {
