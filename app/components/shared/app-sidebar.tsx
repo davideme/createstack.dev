@@ -13,8 +13,8 @@ import { Home, FileText } from "lucide-react"
 import { useLocation } from "react-router"
 
 const sidebarItems = [
-  { id: "dashboard", label: "Project", icon: Home, href: "/" },
-  { id: "projects", label: "All Projects", icon: FileText, href: "/projects" },
+  { id: "dashboard", label: "Technology Planning", icon: Home, href: "/" },
+  { id: "projects", label: "Project Portfolio", icon: FileText, href: "/projects" },
 ]
 
 export function AppSidebar() {

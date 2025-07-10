@@ -227,7 +227,7 @@ export default function Dashboard() {
         disabled={!isReady}
       >
         <span>+</span>
-        <span>New Project</span>
+        <span>New Project Plan</span>
       </Button>
     </div>
   )
@@ -261,8 +261,8 @@ export default function Dashboard() {
 
   return (
     <AppLayout 
-      title="Project" 
-      description="Welcome back! Here's what's happening."
+      title="Technology Stack Planning" 
+      description="Build business-aligned technology choices with clear rationale for stakeholders across teams."
       headerActions={clearSavedDataAction}
     >
       <div className="grid gap-6 lg:grid-cols-2">
@@ -271,10 +271,10 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">{projectTypes.find(p => p.id === selectedProjectType)?.emoji}</span>
-              <span>Project Type</span>
+              <span>Product Strategy & Architecture</span>
             </CardTitle>
             <CardDescription>
-              Choose the type of project you're building to get tailored recommendations
+              Align technical approach with business goals, budget constraints, and delivery timelines
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -365,7 +365,7 @@ export default function Dashboard() {
               <span>Code Hosting</span>
             </CardTitle>
             <CardDescription>
-              Create a new repository for your project on your preferred platform
+              Choose development tools considering budget, compliance requirements, and team productivity
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -473,7 +473,7 @@ export default function Dashboard() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Single vendor entry ready for your evaluation spreadsheet
+                  Vendor assessment template for finance approvals and procurement processes
                 </p>
               </div>
             )}

@@ -3,8 +3,8 @@ import Dashboard from "../components/dashboard";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Project - CreateStack" },
-    { name: "description", content: "Modern project creation dashboard built with shadcn/ui" },
+    { title: "Technology Planning & Decisions - CreateStack" },
+    { name: "description", content: "Cross-functional platform for technology decisions. Communicate technical choices to product, finance, and compliance teams with clear business justification." },
   ];
 }
 
