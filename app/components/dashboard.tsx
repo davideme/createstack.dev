@@ -311,11 +311,8 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground mb-2">
                 <strong>Best for:</strong> {projectTypes.find(p => p.id === selectedProjectType)?.bestFor}
               </p>
-              <p className="text-xs text-muted-foreground mb-2">
-                <strong>Common Stacks:</strong> {projectTypes.find(p => p.id === selectedProjectType)?.commonStacks.join(", ")}
-              </p>
               <p className="text-xs text-muted-foreground">
-                <strong>Timeline:</strong> {projectTypes.find(p => p.id === selectedProjectType)?.estimatedTimeline}
+                <strong>Common Stacks:</strong> {projectTypes.find(p => p.id === selectedProjectType)?.commonStacks.join(", ")}
               </p>
             </div>
             
@@ -332,10 +329,7 @@ export default function Dashboard() {
                   <SelectContent>
                     {getArchitecturesForProjectType(selectedProjectType).map((arch) => (
                       <SelectItem key={arch.id} value={arch.id}>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs bg-muted px-1 rounded">{arch.complexity}</span>
-                          <span>{arch.name}</span>
-                        </div>
+                        <span>{arch.name}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -346,11 +340,8 @@ export default function Dashboard() {
             {/* Architecture Info */}
             {selectedArchitecture && getArchitecture(selectedProjectType, selectedArchitecture) && (
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
-                  <span className="text-xs bg-blue-100 px-2 py-1 rounded">
-                    {getArchitecture(selectedProjectType, selectedArchitecture)?.complexity}
-                  </span>
-                  <span>{getArchitecture(selectedProjectType, selectedArchitecture)?.name}</span>
+                <h4 className="text-sm font-medium mb-1">
+                  {getArchitecture(selectedProjectType, selectedArchitecture)?.name}
                 </h4>
                 <p className="text-xs text-blue-700 mb-2">
                   {getArchitecture(selectedProjectType, selectedArchitecture)?.description}
