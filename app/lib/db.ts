@@ -8,6 +8,7 @@ export interface Project {
   name: string;
   platform: string;
   projectType: string;
+  architecture?: string;
   dependencyTool: string;
   documentationTool: string;
   createdAt: Date;
@@ -180,6 +181,7 @@ class CreateStackDB {
     name: string;
     platform: string;
     projectType: string;
+    architecture?: string;
     dependencyTool: string;
     documentationTool: string;
   }): Promise<Project> {
@@ -192,6 +194,7 @@ class CreateStackDB {
         name: projectData.name,
         platform: projectData.platform,
         projectType: projectData.projectType,
+        architecture: projectData.architecture,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
         lastModified: new Date()
@@ -205,6 +208,7 @@ class CreateStackDB {
         name: projectData.name,
         platform: projectData.platform,
         projectType: projectData.projectType,
+        architecture: projectData.architecture,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
         createdAt: new Date(),
@@ -355,6 +359,7 @@ export function useCurrentProject() {
     name: string;
     platform: string;
     projectType: string;
+    architecture?: string;
     dependencyTool: string;
     documentationTool: string;
   }) => {
