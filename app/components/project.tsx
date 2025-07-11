@@ -18,7 +18,7 @@ import { documentationTools, getAvailableDocumentationTools, getDocumentationToo
 
 // Utility imports
 import { generateTerraformCode, generatePulumiCode, generateCloudFormationCode, generateCDKCode } from "~/utils/code-generators"
-import { generateADR, generateDependencyADR, generateDocumentationADR } from "~/utils/adr-generators"
+import { generateADR, generateDependencyADR, generateDocumentationADR, generateArchitectureADR } from "~/utils/adr-generators"
 import { generateVendorComparison, generateDependencyVendorComparison, generateDocumentationVendorComparison } from "~/utils/vendor-utils"
 
 export default function Project() {
@@ -351,6 +351,25 @@ export default function Project() {
                 </p>
                 <p className="text-xs text-blue-700">
                   <strong>Examples:</strong> {getArchitecture(selectedProjectType, selectedArchitecture)?.examples.join(", ")}
+                </p>
+              </div>
+            )}
+            
+            {/* Architecture ADR Section */}
+            {projectName.trim() && selectedArchitecture && (
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">📝 Architecture Decision Record</h4>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(generateArchitectureADR(projectName, selectedArchitecture, getArchitecturesForProjectType(selectedProjectType)))}
+                  >
+                    Copy ADR
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Document your architecture pattern decision for future reference
                 </p>
               </div>
             )}
