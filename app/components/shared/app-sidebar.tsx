@@ -13,7 +13,7 @@ import { Home, FileText } from "lucide-react"
 import { useLocation } from "react-router"
 
 const sidebarItems = [
-  { id: "dashboard", label: "Technology Planning", icon: Home, href: "/" },
+  { id: "project", label: "Technology Planning", icon: Home, href: "/" },
   { id: "projects", label: "Project Portfolio", icon: FileText, href: "/projects" },
 ]
 

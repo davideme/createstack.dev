@@ -21,7 +21,7 @@ import { generateTerraformCode, generatePulumiCode, generateCloudFormationCode, 
 import { generateADR, generateDependencyADR, generateDocumentationADR } from "~/utils/adr-generators"
 import { generateVendorComparison, generateDependencyVendorComparison, generateDocumentationVendorComparison } from "~/utils/vendor-utils"
 
-export default function Dashboard() {
+export default function Project() {
   const [projectName, setProjectName] = useState("")
   const [selectedPlatform, setSelectedPlatform] = useState("github")
   const [selectedProjectType, setSelectedProjectType] = useState("web-app")

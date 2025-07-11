@@ -1,5 +1,5 @@
 import type { Route } from "./+types/home";
-import Dashboard from "../components/dashboard";
+import Project from "../components/project";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,5 +9,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <Dashboard />;
+  return <Project />;
 }
