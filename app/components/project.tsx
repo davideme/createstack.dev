@@ -5,8 +5,9 @@ import { Input } from "~/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { SavingIndicator } from "~/components/ui/saving-indicator"
+import { MermaidDiagram } from "~/components/ui/mermaid-diagram"
 import { AppLayout } from "~/components/shared/app-layout"
-import { ExternalLink } from "lucide-react"
+import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useDB, useCurrentProject } from "~/lib/db"
 
@@ -20,6 +21,7 @@ import { documentationTools, getAvailableDocumentationTools, getDocumentationToo
 import { generateTerraformCode, generatePulumiCode, generateCloudFormationCode, generateCDKCode } from "~/utils/code-generators"
 import { generateADR, generateDependencyADR, generateDocumentationADR, generateArchitectureADR } from "~/utils/adr-generators"
 import { generateVendorComparison, generateDependencyVendorComparison, generateDocumentationVendorComparison } from "~/utils/vendor-utils"
+import { generateArchitectureDiagram } from "~/utils/architecture-diagrams"
 
 export default function Project() {
   const [projectName, setProjectName] = useState("")
@@ -28,6 +30,7 @@ export default function Project() {
   const [selectedArchitecture, setSelectedArchitecture] = useState("")
   const [selectedDepTool, setSelectedDepTool] = useState("dependabot")
   const [selectedDocTool, setSelectedDocTool] = useState("readme")
+  const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const { isReady, error } = useDB()
   const { currentProject, saveCurrentProject, clearCurrentProject } = useCurrentProject()
@@ -113,8 +116,11 @@ export default function Project() {
     if (!isCurrentArchitectureAvailable && availableArchitectures.length > 0) {
       // Set to the first architecture as default
       setSelectedArchitecture(availableArchitectures[0].id)
+      // Reset diagram visibility when architecture changes
+      setShowArchitectureDiagram(false)
     } else if (availableArchitectures.length === 0) {
       setSelectedArchitecture("")
+      setShowArchitectureDiagram(false)
     }
   }, [selectedProjectType, selectedArchitecture])
 
@@ -352,6 +358,33 @@ export default function Project() {
                 <p className="text-xs text-blue-700">
                   <strong>Examples:</strong> {getArchitecture(selectedProjectType, selectedArchitecture)?.examples.join(", ")}
                 </p>
+              </div>
+            )}
+            
+            {/* Architecture Diagram */}
+            {selectedArchitecture && getArchitecture(selectedProjectType, selectedArchitecture) && (
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowArchitectureDiagram(!showArchitectureDiagram)}
+                  className="flex items-center justify-between w-full text-left text-sm font-medium hover:text-blue-600 transition-colors"
+                >
+                  <span>🏗️ Architecture Diagram</span>
+                  {showArchitectureDiagram ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+                {showArchitectureDiagram && (
+                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <MermaidDiagram 
+                      key={`${selectedProjectType}-${selectedArchitecture}`}
+                      id={`architecture-${selectedArchitecture}-${selectedProjectType}`}
+                      diagram={generateArchitectureDiagram(getArchitecture(selectedProjectType, selectedArchitecture)!).mermaidCode}
+                      className="w-full"
+                    />
+                  </div>
+                )}
               </div>
             )}
             
