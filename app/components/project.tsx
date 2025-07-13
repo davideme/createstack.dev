@@ -1,27 +1,25 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { Input } from "~/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
-import { ScrollArea } from "~/components/ui/scroll-area"
 import { SavingIndicator } from "~/components/ui/saving-indicator"
 import { MermaidDiagram } from "~/components/ui/mermaid-diagram"
 import { AppLayout } from "~/components/shared/app-layout"
+import { InfrastructureAsCode } from "~/components/shared/infrastructure-as-code"
+import { DependencyManagementCard } from "~/components/cards/dependency-management-card"
+import { DocumentationCard } from "~/components/cards/documentation-card"
+import { CICDCard } from "~/components/cards/cicd-card"
 import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useDB, useCurrentProject } from "~/lib/db"
 
 // Data imports
 import { platforms } from "~/data/platforms"
-import { projectTypes, getProjectType, getArchitecturesForProjectType, getArchitecture } from "~/data/project-types"
-import { dependencyTools, getAvailableDependencyTools, getDependencyToolDocumentationUrl, isDependencyToolNativeToPlatform } from "~/data/dependency-tools"
-import { documentationTools, getAvailableDocumentationTools, getDocumentationToolUrl, isDocumentationToolNativeToPlatform } from "~/data/documentation-tools"
-import { cicdTools, getAvailableCICDTools, getCICDToolDocumentationUrl, isCICDToolNativeToPlatform } from "~/data/ci-cd-tools"
+import { projectTypes, getArchitecturesForProjectType, getArchitecture } from "~/data/project-types"
 
 // Utility imports
-import { generateTerraformCode, generatePulumiCode, generateCloudFormationCode, generateCDKCode } from "~/utils/code-generators"
-import { generateADR, generateDependencyADR, generateDocumentationADR, generateArchitectureADR, generateCICDADR } from "~/utils/adr-generators"
-import { generateVendorComparison, generateDependencyVendorComparison, generateDocumentationVendorComparison, generateCICDVendorComparison } from "~/utils/vendor-utils"
+import { generateADR, generateArchitectureADR } from "~/utils/adr-generators"
+import { generateVendorComparison } from "~/utils/vendor-utils"
 import { generateArchitectureDiagram } from "~/utils/architecture-diagrams"
 
 export default function Project() {
@@ -80,59 +78,25 @@ export default function Project() {
     }
   }, [currentProject])
 
-  // Reset dependency tool selection when platform changes if current selection is not available
+  // Reset architecture selection when project type changes
   useEffect(() => {
-    const availableTools = getAvailableDependencyTools(selectedPlatform)
-    const isCurrentToolAvailable = availableTools.some(tool => tool.id === selectedDepTool)
+    const availableArchitectures = getArchitecturesForProjectType(selectedProjectType)
+    const isCurrentArchitectureAvailable = availableArchitectures.some(arch => arch.id === selectedArchitecture)
     
-    if (!isCurrentToolAvailable && availableTools.length > 0) {
-      // Set to the first available tool, preferring platform-specific ones
-      const platformSpecificTool = availableTools.find(tool => 
-        (selectedPlatform === 'github' && tool.id === 'dependabot') ||
-        (selectedPlatform === 'gitlab' && tool.id === 'gitlab-deps')
-      )
-      setSelectedDepTool(platformSpecificTool?.id || availableTools[0].id)
+    if (!isCurrentArchitectureAvailable && availableArchitectures.length > 0) {
+      setSelectedArchitecture(availableArchitectures[0].id)
+      setShowArchitectureDiagram(false)
+    } else if (availableArchitectures.length === 0) {
+      setSelectedArchitecture("")
+      setShowArchitectureDiagram(false)
     }
-  }, [selectedPlatform, selectedDepTool])
-
-  // Reset documentation tool selection when platform changes if current selection is not available
-  useEffect(() => {
-    const availableDocTools = getAvailableDocumentationTools(selectedPlatform)
-    const isCurrentDocToolAvailable = availableDocTools.some(tool => tool.id === selectedDocTool)
-    
-    if (!isCurrentDocToolAvailable && availableDocTools.length > 0) {
-      // Set to platform-specific tool or README as fallback
-      const platformSpecificTool = availableDocTools.find(tool => 
-        (selectedPlatform === 'github' && tool.id === 'github-wiki') ||
-        (selectedPlatform === 'gitlab' && tool.id === 'gitlab-wiki') ||
-        (tool.id === 'readme')
-      )
-      setSelectedDocTool(platformSpecificTool?.id || availableDocTools[0].id)
-    }
-  }, [selectedPlatform, selectedDocTool])
-
-  // Reset CI/CD tool selection when platform changes if current selection is not available
-  useEffect(() => {
-    const availableCICDTools = getAvailableCICDTools(selectedPlatform)
-    const isCurrentCICDToolAvailable = availableCICDTools.some(tool => tool.id === selectedCICDTool)
-    
-    if (!isCurrentCICDToolAvailable && availableCICDTools.length > 0) {
-      // Set to platform-specific tool or default
-      const platformSpecificTool = availableCICDTools.find(tool => 
-        (selectedPlatform === 'github' && tool.id === 'github-actions') ||
-        (selectedPlatform === 'gitlab' && tool.id === 'gitlab-ci') ||
-        (selectedPlatform === 'bitbucket' && tool.id === 'bitbucket-pipelines')
-      )
-      setSelectedCICDTool(platformSpecificTool?.id || availableCICDTools[0].id)
-    }
-  }, [selectedPlatform, selectedCICDTool])
+  }, [selectedProjectType, selectedArchitecture])
 
   const handleCreateRepository = async () => {
     if (projectName.trim()) {
       const platform = platforms.find(p => p.id === selectedPlatform)
       if (platform) {
         try {
-          // Save current project data to IndexedDB
           await saveCurrentProject({
             name: projectName.trim(),
             platform: selectedPlatform,
@@ -143,7 +107,6 @@ export default function Project() {
             cicdTool: selectedCICDTool
           })
 
-          // Open the platform URL
           const url = platform.url === '#' ? '#' : platform.url + encodeURIComponent(projectName.trim())
           if (url !== '#') {
             window.open(url, '_blank')
@@ -152,33 +115,6 @@ export default function Project() {
           console.error('Failed to save project:', error)
         }
       }
-    }
-  }
-
-  const handleConfigureTool = () => {
-    const url = getDependencyToolDocumentationUrl(selectedDepTool)
-    if (url !== "#") {
-      window.open(url, '_blank')
-    } else {
-      alert("Manual dependency management doesn't have specific documentation. Consider setting up a process for tracking and updating dependencies.")
-    }
-  }
-
-  const handleConfigureDocTool = () => {
-    const url = getDocumentationToolUrl(selectedDocTool)
-    if (url !== "#") {
-      window.open(url, '_blank')
-    } else {
-      alert("This documentation tool requires manual setup. Please refer to the tool's official documentation.")
-    }
-  }
-
-  const handleConfigureCICDTool = () => {
-    const url = getCICDToolDocumentationUrl(selectedCICDTool)
-    if (url !== "#") {
-      window.open(url, '_blank')
-    } else {
-      alert("Manual CI/CD setup doesn't have specific documentation. Consider setting up deployment scripts or automation processes.")
     }
   }
 
@@ -207,10 +143,8 @@ export default function Project() {
     if (!isReady) return
 
     try {
-      // Clear current project
       await clearCurrentProject()
       
-      // Reset form state
       setProjectName("")
       setSelectedPlatform("github")
       setSelectedProjectType("web-app")
@@ -547,508 +481,43 @@ export default function Project() {
 
             {/* Infrastructure as Code Section */}
             {showIaC && projectName.trim() && (
-              <div className="space-y-4 border-t pt-4">
-                <h4 className="text-sm font-medium">Infrastructure as Code Templates</h4>
-                
-                <Tabs defaultValue={defaultIaCTool} onValueChange={setDefaultIaCTool} className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="terraform">Terraform</TabsTrigger>
-                    <TabsTrigger value="pulumi">Pulumi</TabsTrigger>
-                    <TabsTrigger value="cdk">CDK</TabsTrigger>
-                    <TabsTrigger value="cloudformation">CloudFormation</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="terraform" className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">Terraform HCL configuration</p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(generateTerraformCode(projectName, selectedPlatform))}
-                      >
-                        Copy Code
-                      </Button>
-                    </div>
-                    <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
-                      <pre className="p-3 text-xs">
-                        <code>{generateTerraformCode(projectName, selectedPlatform)}</code>
-                      </pre>
-                    </ScrollArea>
-                  </TabsContent>
-                  
-                  <TabsContent value="pulumi" className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">Pulumi TypeScript program</p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(generatePulumiCode(projectName, platforms, selectedPlatform))}
-                      >
-                        Copy Code
-                      </Button>
-                    </div>
-                    <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
-                      <pre className="p-3 text-xs">
-                        <code>{generatePulumiCode(projectName, platforms, selectedPlatform)}</code>
-                      </pre>
-                    </ScrollArea>
-                  </TabsContent>
-                  
-                  <TabsContent value="cdk" className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">AWS CDK TypeScript</p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(generateCDKCode(projectName, selectedPlatform, platforms))}
-                      >
-                        Copy Code
-                      </Button>
-                    </div>
-                    <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
-                      <pre className="p-3 text-xs">
-                        <code>{generateCDKCode(projectName, selectedPlatform, platforms)}</code>
-                      </pre>
-                    </ScrollArea>
-                  </TabsContent>
-                  
-                  <TabsContent value="cloudformation" className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">AWS CloudFormation template</p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(generateCloudFormationCode(projectName))}
-                      >
-                        Copy Code
-                      </Button>
-                    </div>
-                    <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
-                      <pre className="p-3 text-xs">
-                        <code>{generateCloudFormationCode(projectName)}</code>
-                      </pre>
-                    </ScrollArea>
-                  </TabsContent>
-                </Tabs>
-              </div>
+              <InfrastructureAsCode
+                projectName={projectName}
+                selectedPlatform={selectedPlatform}
+                defaultIaCTool={defaultIaCTool}
+                onDefaultIaCToolChange={setDefaultIaCTool}
+                onCopyToClipboard={copyToClipboard}
+              />
             )}
           </CardContent>
         </Card>
 
         {/* Dependencies Management Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <span className="text-xl">{dependencyTools.find(t => t.id === selectedDepTool)?.emoji}</span>
-              <span>Dependencies Management</span>
-            </CardTitle>
-            <CardDescription>
-              Manage your project dependencies and automate updates
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="dep-tool-select" className="text-sm font-medium">
-                Dependency Tool
-              </label>
-              <Select value={selectedDepTool} onValueChange={setSelectedDepTool}>
-                <SelectTrigger id="dep-tool-select">
-                  <SelectValue placeholder="Select a dependency tool" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getAvailableDependencyTools(selectedPlatform).map((tool) => (
-                    <SelectItem key={tool.id} value={tool.id}>
-                      <div className="flex items-center space-x-2">
-                        <span>{tool.emoji}</span>
-                        <span>{tool.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Tool Info */}
-            <div className="p-3 bg-muted rounded-lg">
-              <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
-                <span>{dependencyTools.find(t => t.id === selectedDepTool)?.emoji}</span>
-                <span>{dependencyTools.find(t => t.id === selectedDepTool)?.name}</span>
-              </h4>
-              <p className="text-xs text-muted-foreground mb-1">
-                {dependencyTools.find(t => t.id === selectedDepTool)?.description}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                <strong>Best for:</strong> {dependencyTools.find(t => t.id === selectedDepTool)?.bestFor}
-              </p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button 
-                className="flex items-center space-x-2"
-                disabled={!projectName.trim()}
-                onClick={handleConfigureTool}
-              >
-                <span>{dependencyTools.find(t => t.id === selectedDepTool)?.emoji}</span>
-                <span>Configure Tool</span>
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            {/* ADR Section */}
-            {projectName.trim() && (
-              <div className="space-y-2 border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium">📝 Architecture Decision Record</h4>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyToClipboard(generateDependencyADR(projectName, selectedDepTool, dependencyTools))}
-                  >
-                    Copy ADR
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Document your dependencies management decision for future reference
-                </p>
-              </div>
-            )}
-
-            {/* Vendor Entry Section */}
-            {projectName.trim() && (
-              <div className="space-y-2 border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium">📊 Vendor Entry</h4>
-                  {!isDependencyToolNativeToPlatform(selectedPlatform, selectedDepTool) && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyToClipboard(generateDependencyVendorComparison(projectName, selectedDepTool, dependencyTools))}
-                    >
-                      Copy Vendor Row
-                    </Button>
-                  )}
-                </div>
-                {isDependencyToolNativeToPlatform(selectedPlatform, selectedDepTool) ? (
-                  <div className="p-2 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-xs text-green-700">
-                      ✅ <strong>{dependencyTools.find(t => t.id === selectedDepTool)?.name}</strong> is already included with {platforms.find(p => p.id === selectedPlatform)?.name}. No separate vendor evaluation needed.
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Vendor entry for <strong>{dependencyTools.find(t => t.id === selectedDepTool)?.name}</strong> ready for your evaluation spreadsheet
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Configuration as Code Section */}
-            {showIaC && projectName.trim() && (
-              <div className="space-y-4 border-t pt-4">
-                <h4 className="text-sm font-medium">Configuration as Code Templates</h4>
-                
-                <Tabs defaultValue={defaultIaCTool} onValueChange={setDefaultIaCTool} className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="terraform">Terraform</TabsTrigger>
-                    <TabsTrigger value="pulumi">Pulumi</TabsTrigger>
-                    <TabsTrigger value="cdk">CDK</TabsTrigger>
-                    <TabsTrigger value="cloudformation">CloudFormation</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="terraform" className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">Terraform HCL configuration</p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(generateTerraformCode(projectName, selectedPlatform))}
-                      >
-                        Copy Code
-                      </Button>
-                    </div>
-                    <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
-                      <pre className="p-3 text-xs">
-                        <code>{generateTerraformCode(projectName, selectedPlatform)}</code>
-                      </pre>
-                    </ScrollArea>
-                  </TabsContent>
-                  
-                  <TabsContent value="pulumi" className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">Pulumi TypeScript program</p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(generatePulumiCode(projectName, platforms, selectedPlatform))}
-                      >
-                        Copy Code
-                      </Button>
-                    </div>
-                    <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
-                      <pre className="p-3 text-xs">
-                        <code>{generatePulumiCode(projectName, platforms, selectedPlatform)}</code>
-                      </pre>
-                    </ScrollArea>
-                  </TabsContent>
-                  
-                  <TabsContent value="cdk" className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">AWS CDK TypeScript</p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(generateCDKCode(projectName, selectedPlatform, platforms))}
-                      >
-                        Copy Code
-                      </Button>
-                    </div>
-                    <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
-                      <pre className="p-3 text-xs">
-                        <code>{generateCDKCode(projectName, selectedPlatform, platforms)}</code>
-                      </pre>
-                    </ScrollArea>
-                  </TabsContent>
-                  
-                  <TabsContent value="cloudformation" className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">AWS CloudFormation template</p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(generateCloudFormationCode(projectName))}
-                      >
-                        Copy Code
-                      </Button>
-                    </div>
-                    <ScrollArea className="h-64 w-full rounded-lg border bg-muted">
-                      <pre className="p-3 text-xs">
-                        <code>{generateCloudFormationCode(projectName)}</code>
-                      </pre>
-                    </ScrollArea>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <DependencyManagementCard
+          projectName={projectName}
+          selectedPlatform={selectedPlatform}
+          selectedDepTool={selectedDepTool}
+          onDepToolChange={setSelectedDepTool}
+          onCopyToClipboard={copyToClipboard}
+        />
 
         {/* Documentation Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <span className="text-xl">{documentationTools.find(t => t.id === selectedDocTool)?.emoji}</span>
-              <span>Documentation</span>
-            </CardTitle>
-            <CardDescription>
-              Create and maintain project documentation
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="doc-tool-select" className="text-sm font-medium">
-                Documentation Tool
-              </label>
-              <Select value={selectedDocTool} onValueChange={setSelectedDocTool}>
-                <SelectTrigger id="doc-tool-select">
-                  <SelectValue placeholder="Select a documentation tool" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getAvailableDocumentationTools(selectedPlatform).map((tool) => (
-                    <SelectItem key={tool.id} value={tool.id}>
-                      <div className="flex items-center space-x-2">
-                        <span>{tool.emoji}</span>
-                        <span>{tool.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Tool Info */}
-            <div className="p-3 bg-muted rounded-lg">
-              <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
-                <span>{documentationTools.find(t => t.id === selectedDocTool)?.emoji}</span>
-                <span>{documentationTools.find(t => t.id === selectedDocTool)?.name}</span>
-              </h4>
-              <p className="text-xs text-muted-foreground mb-1">
-                {documentationTools.find(t => t.id === selectedDocTool)?.description}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                <strong>Best for:</strong> {documentationTools.find(t => t.id === selectedDocTool)?.bestFor}
-              </p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button 
-                className="flex items-center space-x-2"
-                disabled={!projectName.trim()}
-                onClick={handleConfigureDocTool}
-              >
-                <span>{documentationTools.find(t => t.id === selectedDocTool)?.emoji}</span>
-                <span>Setup Documentation</span>
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            {/* ADR Section */}
-            {projectName.trim() && (
-              <div className="space-y-2 border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium">📝 Architecture Decision Record</h4>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyToClipboard(generateDocumentationADR(projectName, selectedDocTool, documentationTools))}
-                  >
-                    Copy ADR
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Document your documentation platform decision for future reference
-                </p>
-              </div>
-            )}
-
-            {/* Vendor Entry Section */}
-            {projectName.trim() && (
-              <div className="space-y-2 border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium">📊 Vendor Entry</h4>
-                  {!isDocumentationToolNativeToPlatform(selectedPlatform, selectedDocTool) && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyToClipboard(generateDocumentationVendorComparison(projectName, selectedDocTool, documentationTools))}
-                    >
-                      Copy Vendor Row
-                    </Button>
-                  )}
-                </div>
-                {isDocumentationToolNativeToPlatform(selectedPlatform, selectedDocTool) ? (
-                  <div className="p-2 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-xs text-green-700">
-                      ✅ <strong>{documentationTools.find(t => t.id === selectedDocTool)?.name}</strong> is already included with {platforms.find(p => p.id === selectedPlatform)?.name}. No separate vendor evaluation needed.
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Vendor entry for <strong>{documentationTools.find(t => t.id === selectedDocTool)?.name}</strong> ready for your evaluation spreadsheet
-                  </p>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <DocumentationCard
+          projectName={projectName}
+          selectedPlatform={selectedPlatform}
+          selectedDocTool={selectedDocTool}
+          onDocToolChange={setSelectedDocTool}
+          onCopyToClipboard={copyToClipboard}
+        />
 
         {/* CI/CD Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <span className="text-xl">{cicdTools.find(t => t.id === selectedCICDTool)?.emoji}</span>
-              <span>Continuous Integration</span>
-            </CardTitle>
-            <CardDescription>
-              Automate build, test, and deployment processes
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="cicd-tool-select" className="text-sm font-medium">
-                CI/CD Platform
-              </label>
-              <Select value={selectedCICDTool} onValueChange={setSelectedCICDTool}>
-                <SelectTrigger id="cicd-tool-select">
-                  <SelectValue placeholder="Select a CI/CD platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getAvailableCICDTools(selectedPlatform).map((tool) => (
-                    <SelectItem key={tool.id} value={tool.id}>
-                      <div className="flex items-center space-x-2">
-                        <span>{tool.emoji}</span>
-                        <span>{tool.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Tool Info */}
-            <div className="p-3 bg-muted rounded-lg">
-              <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
-                <span>{cicdTools.find(t => t.id === selectedCICDTool)?.emoji}</span>
-                <span>{cicdTools.find(t => t.id === selectedCICDTool)?.name}</span>
-              </h4>
-              <p className="text-xs text-muted-foreground mb-1">
-                {cicdTools.find(t => t.id === selectedCICDTool)?.description}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                <strong>Best for:</strong> {cicdTools.find(t => t.id === selectedCICDTool)?.bestFor}
-              </p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button 
-                className="flex items-center space-x-2"
-                disabled={!projectName.trim()}
-                onClick={handleConfigureCICDTool}
-              >
-                <span>{cicdTools.find(t => t.id === selectedCICDTool)?.emoji}</span>
-                <span>Setup CI/CD</span>
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            {/* ADR Section */}
-            {projectName.trim() && (
-              <div className="space-y-2 border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium">📝 Architecture Decision Record</h4>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyToClipboard(generateCICDADR(projectName, selectedCICDTool, cicdTools))}
-                  >
-                    Copy ADR
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Document your CI/CD platform decision for future reference
-                </p>
-              </div>
-            )}
-
-            {/* Vendor Entry Section */}
-            {projectName.trim() && (
-              <div className="space-y-2 border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium">📊 Vendor Entry</h4>
-                  {!isCICDToolNativeToPlatform(selectedPlatform, selectedCICDTool) && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyToClipboard(generateCICDVendorComparison(projectName, selectedCICDTool, cicdTools))}
-                    >
-                      Copy Vendor Row
-                    </Button>
-                  )}
-                </div>
-                {isCICDToolNativeToPlatform(selectedPlatform, selectedCICDTool) ? (
-                  <div className="p-2 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-xs text-green-700">
-                      ✅ <strong>{cicdTools.find(t => t.id === selectedCICDTool)?.name}</strong> is already included with {platforms.find(p => p.id === selectedPlatform)?.name}. No separate vendor evaluation needed.
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Vendor entry for <strong>{cicdTools.find(t => t.id === selectedCICDTool)?.name}</strong> ready for your evaluation spreadsheet
-                  </p>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <CICDCard
+          projectName={projectName}
+          selectedPlatform={selectedPlatform}
+          selectedCICDTool={selectedCICDTool}
+          onCICDToolChange={setSelectedCICDTool}
+          onCopyToClipboard={copyToClipboard}
+        />
       </div>
     </AppLayout>
   )
