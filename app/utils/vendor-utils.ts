@@ -1,4 +1,4 @@
-import type { VendorDetails, Platform, DependencyTool, DocumentationTool, CICDTool } from "~/types/project";
+import type { VendorDetails, Platform, DependencyTool, DocumentationTool, CICDTool, IssueTrackingTool } from "~/types/project";
 
 export const getVendorDetails = (platformId: string): VendorDetails => {
   const details = {
@@ -688,3 +688,139 @@ Tool Type: CI/CD Platform
 - Best For: ${tool.bestFor}
 - Key Features: ${tool.features.join(', ')}`
 };
+
+export const generateIssueTrackingVendorComparison = (
+  projectName: string,
+  selectedTool: string,
+  issueTrackingTools: IssueTrackingTool[]
+): string => {
+  const repoName = projectName.trim() || "my-project"
+  const tool = issueTrackingTools.find(t => t.id === selectedTool)
+  const currentDate = new Date().toISOString().split('T')[0]
+  
+  if (!tool) {
+    return `# Issue Tracking Vendor Comparison Row - Tool not found`
+  }
+  
+  const vendorDetails = getIssueTrackingVendorDetails(tool)
+  
+  return `# Issue Tracking Vendor Comparison Row for ${repoName}
+
+## Tab-separated vendor row (copy everything between the dashes):
+---
+${vendorDetails.vendorName}	${vendorDetails.company}	${vendorDetails.productService}	${vendorDetails.pricingModel}	${vendorDetails.contractTerms}	${vendorDetails.supportSLA}	${vendorDetails.compliance}	${vendorDetails.dataResidency}	${vendorDetails.businessStability}	${vendorDetails.marketPosition}	${vendorDetails.integrationCapability}	${vendorDetails.scalability}	${vendorDetails.securityCertifications}	${vendorDetails.references}	${repoName}	${currentDate}	Under Evaluation
+---
+
+# Instructions:
+1. Copy the tab-separated row above
+2. Paste into your vendor evaluation spreadsheet
+3. The row includes: Vendor Name, Company, Product/Service, Pricing Model, Contract Terms, Support SLA, Compliance, Data Residency, Business Stability, Market Position, Integration Capability, Scalability, Security Certifications, References, Project Name, Evaluation Date, Status
+
+# Tool Summary for ${tool.name}:
+- Platform: ${tool.platform}
+- Pricing: ${tool.pricing}
+- Best For: ${tool.bestFor}
+- Key Features: ${tool.features.join(', ')}`
+};
+
+function getIssueTrackingVendorDetails(tool: IssueTrackingTool): VendorDetails {
+  const vendorMappings: Record<string, VendorDetails> = {
+    "github-issues": {
+      vendorName: "GitHub Issues",
+      company: "GitHub (Microsoft)",
+      productService: "Issue Tracking & Project Management",
+      pricingModel: "Free for public repos, per-user/month for private",
+      contractTerms: "Monthly/Annual subscription",
+      supportSLA: "Community support (free), Priority support (paid)",
+      compliance: "SOC 2 Type II, ISO 27001, GDPR",
+      dataResidency: "Global (US, EU options)",
+      businessStability: "High - Microsoft subsidiary",
+      marketPosition: "Market leader in code hosting",
+      integrationCapability: "Excellent - GitHub ecosystem",
+      scalability: "Excellent - Cloud-native",
+      securityCertifications: "SOC 2, ISO 27001, FedRAMP",
+      references: "Open source community, enterprise customers"
+    },
+    "gitlab-issues": {
+      vendorName: "GitLab Issues",
+      company: "GitLab Inc.",
+      productService: "Issue Tracking & Project Management",
+      pricingModel: "Freemium, per-user/month",
+      contractTerms: "Monthly/Annual subscription",
+      supportSLA: "Community support (free), Priority support (paid)",
+      compliance: "SOC 2 Type II, ISO 27001, GDPR",
+      dataResidency: "Global (US, EU options)",
+      businessStability: "High - Public company",
+      marketPosition: "Strong competitor to GitHub",
+      integrationCapability: "Excellent - GitLab ecosystem",
+      scalability: "Excellent - Cloud-native",
+      securityCertifications: "SOC 2, ISO 27001",
+      references: "Enterprise customers, DevOps teams"
+    },
+    "jira": {
+      vendorName: "Jira",
+      company: "Atlassian",
+      productService: "Issue Tracking & Project Management",
+      pricingModel: "Per-user/month, volume discounts",
+      contractTerms: "Monthly/Annual subscription",
+      supportSLA: "Community support, Priority support (paid)",
+      compliance: "SOC 2 Type II, ISO 27001, GDPR",
+      dataResidency: "Global (US, EU, Australia)",
+      businessStability: "High - Established public company",
+      marketPosition: "Market leader in issue tracking",
+      integrationCapability: "Excellent - Atlassian ecosystem",
+      scalability: "Excellent - Enterprise-grade",
+      securityCertifications: "SOC 2, ISO 27001, Cloud Security Alliance",
+      references: "Fortune 500 companies, enterprise customers"
+    },
+    "linear": {
+      vendorName: "Linear",
+      company: "Linear",
+      productService: "Issue Tracking & Project Management",
+      pricingModel: "Per-user/month",
+      contractTerms: "Monthly/Annual subscription",
+      supportSLA: "Email support, Priority support (paid)",
+      compliance: "SOC 2 Type II, GDPR",
+      dataResidency: "US, EU options",
+      businessStability: "Medium - Growing startup",
+      marketPosition: "Emerging player, developer-focused",
+      integrationCapability: "Good - Growing ecosystem",
+      scalability: "Good - Modern architecture",
+      securityCertifications: "SOC 2",
+      references: "Tech startups, product teams"
+    },
+    "asana": {
+      vendorName: "Asana",
+      company: "Asana Inc.",
+      productService: "Project Management & Issue Tracking",
+      pricingModel: "Freemium, per-user/month",
+      contractTerms: "Monthly/Annual subscription",
+      supportSLA: "Community support, Priority support (paid)",
+      compliance: "SOC 2 Type II, ISO 27001, GDPR",
+      dataResidency: "Global (US, EU options)",
+      businessStability: "High - Public company",
+      marketPosition: "Strong in project management",
+      integrationCapability: "Excellent - Wide integrations",
+      scalability: "Excellent - Enterprise-grade",
+      securityCertifications: "SOC 2, ISO 27001",
+      references: "Enterprise customers, project teams"
+    }
+  }
+  
+  return vendorMappings[tool.id] || {
+    vendorName: tool.name,
+    company: "Unknown",
+    productService: "Issue Tracking & Project Management",
+    pricingModel: tool.pricing,
+    contractTerms: "Per terms of service",
+    supportSLA: "Standard support",
+    compliance: "Check vendor documentation",
+    dataResidency: "Check vendor documentation",
+    businessStability: "Check vendor documentation",
+    marketPosition: "Check vendor documentation",
+    integrationCapability: "Check vendor documentation",
+    scalability: "Check vendor documentation",
+    securityCertifications: "Check vendor documentation",
+    references: "Check vendor documentation"
+  }
+}

@@ -7,6 +7,15 @@ export interface Platform {
   url: string;
 }
 
+export interface TeamPersona {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  primaryFocus: string;
+  commonTools: string[];
+}
+
 export interface DependencyTool {
   id: string;
   name: string;
@@ -16,6 +25,8 @@ export interface DependencyTool {
   bestFor: string;
   pricing: string;
   features: string[];
+  targetPersonas: string[]; // Array of persona IDs
+  complexityLevel: 'beginner' | 'intermediate' | 'advanced';
 }
 
 export interface VendorDetails {
@@ -45,6 +56,8 @@ export interface DocumentationTool {
   pricing: string;
   features: string[];
   url: string;
+  targetPersonas: string[]; // Array of persona IDs
+  complexityLevel: 'beginner' | 'intermediate' | 'advanced';
 }
 
 export interface CICDTool {
@@ -56,4 +69,20 @@ export interface CICDTool {
   bestFor: string;
   pricing: string;
   features: string[];
+  targetPersonas: string[]; // Array of persona IDs
+  complexityLevel: 'beginner' | 'intermediate' | 'advanced';
+}
+
+export interface IssueTrackingTool {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  platform: string;
+  bestFor: string;
+  pricing: string;
+  features: string[];
+  url: string;
+  targetPersonas: string[]; // Array of persona IDs
+  complexityLevel: 'beginner' | 'intermediate' | 'advanced';
 }

@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
+import { Badge } from "~/components/ui/badge"
 import { SavingIndicator } from "~/components/ui/saving-indicator"
 import { MermaidDiagram } from "~/components/ui/mermaid-diagram"
 import { AppLayout } from "~/components/shared/app-layout"
@@ -9,6 +10,7 @@ import { InfrastructureAsCode } from "~/components/shared/infrastructure-as-code
 import { DependencyManagementCard } from "~/components/cards/dependency-management-card"
 import { DocumentationCard } from "~/components/cards/documentation-card"
 import { CICDCard } from "~/components/cards/cicd-card"
+import { IssueTrackingCard } from "~/components/cards/issue-tracking-card"
 import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useDB, useCurrentProject } from "~/lib/db"
@@ -16,6 +18,7 @@ import { useDB, useCurrentProject } from "~/lib/db"
 // Data imports
 import { platforms } from "~/data/platforms"
 import { projectTypes, getArchitecturesForProjectType, getArchitecture } from "~/data/project-types"
+import { teamPersonas } from "~/data/personas"
 
 // Utility imports
 import { generateADR, generateArchitectureADR } from "~/utils/adr-generators"
@@ -30,6 +33,8 @@ export default function Project() {
   const [selectedDepTool, setSelectedDepTool] = useState("dependabot")
   const [selectedDocTool, setSelectedDocTool] = useState("readme")
   const [selectedCICDTool, setSelectedCICDTool] = useState("github-actions")
+  const [selectedIssueTrackingTool, setSelectedIssueTrackingTool] = useState("github-issues")
+  const [selectedPersonas, setSelectedPersonas] = useState<string[]>(["developer"])
   const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const { isReady, error } = useDB()
@@ -75,6 +80,8 @@ export default function Project() {
       setSelectedDepTool(currentProject.dependencyTool)
       setSelectedDocTool(currentProject.documentationTool)
       setSelectedCICDTool(currentProject.cicdTool || "github-actions")
+      setSelectedIssueTrackingTool(currentProject.issueTrackingTool || "github-issues")
+      setSelectedPersonas(currentProject.teamPersonas || ["developer"])
     }
   }, [currentProject])
 
@@ -104,7 +111,9 @@ export default function Project() {
             architecture: selectedArchitecture,
             dependencyTool: selectedDepTool,
             documentationTool: selectedDocTool,
-            cicdTool: selectedCICDTool
+            cicdTool: selectedCICDTool,
+            issueTrackingTool: selectedIssueTrackingTool,
+            teamPersonas: selectedPersonas
           })
 
           const url = platform.url === '#' ? '#' : platform.url + encodeURIComponent(projectName.trim())
@@ -130,7 +139,9 @@ export default function Project() {
         architecture: selectedArchitecture,
         dependencyTool: selectedDepTool,
         documentationTool: selectedDocTool,
-        cicdTool: selectedCICDTool
+        cicdTool: selectedCICDTool,
+        issueTrackingTool: selectedIssueTrackingTool,
+        teamPersonas: selectedPersonas
       })
     } catch (error) {
       console.error('Failed to save data:', error)
@@ -152,6 +163,8 @@ export default function Project() {
       setSelectedDepTool("dependabot")
       setSelectedDocTool("readme")
       setSelectedCICDTool("github-actions")
+      setSelectedIssueTrackingTool("github-issues")
+      setSelectedPersonas(["developer"])
       setShowIaC(false)
     } catch (error) {
       console.error('Failed to clear data:', error)
@@ -164,7 +177,7 @@ export default function Project() {
       const timeoutId = setTimeout(saveData, 1000)
       return () => clearTimeout(timeoutId)
     }
-  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedDepTool, selectedDocTool, selectedCICDTool, isReady])
+  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedDepTool, selectedDocTool, selectedCICDTool, selectedIssueTrackingTool, selectedPersonas, isReady])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -405,6 +418,52 @@ export default function Project() {
               </div>
             </div>
             
+            {/* Team Personas Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Team Personas</label>
+              <p className="text-xs text-muted-foreground">
+                Select the roles working on this project to get personalized tool recommendations
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {teamPersonas.map((persona) => {
+                  const isSelected = selectedPersonas.includes(persona.id);
+                  return (
+                    <Badge
+                      key={persona.id}
+                      variant={isSelected ? "default" : "outline"}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected 
+                          ? "bg-primary text-primary-foreground" 
+                          : "hover:bg-muted"
+                      }`}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedPersonas(selectedPersonas.filter(id => id !== persona.id));
+                        } else {
+                          setSelectedPersonas([...selectedPersonas, persona.id]);
+                        }
+                      }}
+                    >
+                      <span className="mr-1">{persona.emoji}</span>
+                      {persona.name}
+                    </Badge>
+                  );
+                })}
+              </div>
+              {selectedPersonas.length > 0 && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs text-blue-700">
+                    <strong>Selected:</strong> {selectedPersonas.map(id => 
+                      teamPersonas.find(p => p.id === id)?.name
+                    ).join(", ")}
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Tools will be filtered and prioritized based on these roles
+                  </p>
+                </div>
+              )}
+            </div>
+            
             {/* Platform Info */}
             <div className="p-3 bg-muted rounded-lg">
               <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
@@ -516,6 +575,16 @@ export default function Project() {
           selectedPlatform={selectedPlatform}
           selectedCICDTool={selectedCICDTool}
           onCICDToolChange={setSelectedCICDTool}
+          onCopyToClipboard={copyToClipboard}
+        />
+
+        {/* Issue Tracking Card */}
+        <IssueTrackingCard
+          projectName={projectName}
+          selectedPlatform={selectedPlatform}
+          selectedIssueTrackingTool={selectedIssueTrackingTool}
+          selectedPersonas={selectedPersonas}
+          onIssueTrackingToolChange={setSelectedIssueTrackingTool}
           onCopyToClipboard={copyToClipboard}
         />
       </div>

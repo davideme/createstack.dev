@@ -12,6 +12,8 @@ export interface Project {
   dependencyTool: string;
   documentationTool: string;
   cicdTool: string;
+  issueTrackingTool?: string;
+  teamPersonas?: string[]; // Array of persona IDs
   createdAt: Date;
   lastModified: Date;
   status: 'active' | 'archived' | 'draft';
@@ -186,6 +188,8 @@ class CreateStackDB {
     dependencyTool: string;
     documentationTool: string;
     cicdTool: string;
+    issueTrackingTool?: string;
+    teamPersonas?: string[];
   }): Promise<Project> {
     const currentProject = await this.getCurrentProject();
     
@@ -200,6 +204,8 @@ class CreateStackDB {
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
         cicdTool: projectData.cicdTool,
+        issueTrackingTool: projectData.issueTrackingTool,
+        teamPersonas: projectData.teamPersonas,
         lastModified: new Date()
       };
       await this.saveProject(updatedProject);
@@ -215,6 +221,8 @@ class CreateStackDB {
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
         cicdTool: projectData.cicdTool,
+        issueTrackingTool: projectData.issueTrackingTool,
+        teamPersonas: projectData.teamPersonas,
         createdAt: new Date(),
         lastModified: new Date(),
         status: 'draft'
@@ -367,6 +375,8 @@ export function useCurrentProject() {
     dependencyTool: string;
     documentationTool: string;
     cicdTool: string;
+    issueTrackingTool?: string;
+    teamPersonas?: string[];
   }) => {
     const project = await db.saveCurrentProject(projectData);
     setCurrentProject(project);
