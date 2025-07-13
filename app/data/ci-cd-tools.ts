@@ -72,6 +72,16 @@ export const cicdTools: CICDTool[] = [
     features: ["Serverless", "Auto-scaling", "AWS integration", "Custom build environments", "Artifact storage"]
   },
   {
+    id: "google-cloud-build",
+    name: "Google Cloud Build",
+    emoji: "🟡",
+    description: "Google Cloud's fully managed CI/CD platform. ✅ Serverless, fast builds, deep GCP integration, container-native. Languages: All major languages, Docker, Kubernetes.",
+    platform: "Multi-platform",
+    bestFor: "GCP workloads, container deployments, fast parallel builds.",
+    pricing: "120 free build-minutes/day, $0.003/build-minute after",
+    features: ["Serverless", "Fast builds", "GCP integration", "Container-native", "Build triggers", "Vulnerability scanning"]
+  },
+  {
     id: "bitbucket-pipelines",
     name: "Bitbucket Pipelines",
     emoji: "🪣",
@@ -142,6 +152,7 @@ export function getCICDToolDocumentationUrl(toolId: string): string {
     "travis-ci": "https://docs.travis-ci.com/",
     "azure-pipelines": "https://docs.microsoft.com/en-us/azure/devops/pipelines/",
     "aws-codebuild": "https://docs.aws.amazon.com/codebuild/",
+    "google-cloud-build": "https://cloud.google.com/build/docs",
     "bitbucket-pipelines": "https://support.atlassian.com/bitbucket-cloud/docs/get-started-with-bitbucket-pipelines/",
     "teamcity": "https://www.jetbrains.com/help/teamcity/",
     "buildkite": "https://buildkite.com/docs",

@@ -581,6 +581,22 @@ export const getCICDVendorDetails = (toolId: string): VendorDetails => {
       securityCertifications: "SOC 2 Type II, ISO 27001, Regular penetration testing",
       references: "Facebook, Spotify, GoPro (public case studies available)"
     },
+    "google-cloud-build": {
+      vendorName: "Google Cloud Build",
+      company: "Google LLC",
+      productService: "Fully managed CI/CD platform with container-native builds",
+      pricingModel: "Usage-based: 120 free build-minutes/day, $0.003/build-minute after",
+      contractTerms: "Monthly billing, Google Cloud customer agreement, Enterprise terms available",
+      supportSLA: "24/7 for Premium Support, Business hours for Basic, Community for Free",
+      compliance: "SOC 2, ISO 27001, PCI DSS, GDPR, HIPAA (BAA available)",
+      dataResidency: "Global regions available, Data residency controls",
+      businessStability: "Part of Alphabet Inc., Stable revenue, Large enterprise adoption",
+      marketPosition: "Strong in GCP ecosystem, Container-native focus",
+      integrationCapability: "Native GCP integration, GitHub/Bitbucket connectors, REST API",
+      scalability: "Auto-scaling, Parallel builds, Global infrastructure",
+      securityCertifications: "SOC 2 Type II, ISO 27001, Regular security audits",
+      references: "Spotify, Shopify, PayPal (public case studies available)"
+    },
     "manual": {
       vendorName: "Manual Deployment",
       company: "Internal Team",
