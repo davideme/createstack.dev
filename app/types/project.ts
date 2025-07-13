@@ -46,3 +46,14 @@ export interface DocumentationTool {
   features: string[];
   url: string;
 }
+
+export interface CICDTool {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  platform: string;
+  bestFor: string;
+  pricing: string;
+  features: string[];
+}

@@ -1,4 +1,4 @@
-import type { VendorDetails, Platform, DependencyTool, DocumentationTool } from "~/types/project";
+import type { VendorDetails, Platform, DependencyTool, DocumentationTool, CICDTool } from "~/types/project";
 
 export const getVendorDetails = (platformId: string): VendorDetails => {
   const details = {
@@ -502,6 +502,164 @@ Project: ${repoName}
 Evaluation Date: ${currentDate}
 Status: Under evaluation
 Tool Type: Documentation Platform
+
+# Instructions:
+1. Copy the tab-separated row above
+2. Paste into your vendor evaluation spreadsheet
+3. The row includes: Vendor Name, Company, Product/Service, Pricing Model, Contract Terms, Support SLA, Compliance, Data Residency, Business Stability, Market Position, Integration Capability, Scalability, Security Certifications, References, Project Name, Evaluation Date, Status
+
+# Tool Summary for ${tool.name}:
+- Platform: ${tool.platform}
+- Pricing: ${tool.pricing}
+- Best For: ${tool.bestFor}
+- Key Features: ${tool.features.join(', ')}`
+};
+
+export const getCICDVendorDetails = (toolId: string): VendorDetails => {
+  const details = {
+    "github-actions": {
+      vendorName: "GitHub Actions",
+      company: "Microsoft Corporation",
+      productService: "Cloud-based CI/CD platform integrated with GitHub",
+      pricingModel: "Usage-based: Free for public repos, $0.008/minute for private repos",
+      contractTerms: "Monthly billing, Enterprise agreements available",
+      supportSLA: "24/7 for Enterprise, Business hours for Pro/Team, Community for Free",
+      compliance: "SOC 2, ISO 27001, PCI DSS, GDPR, Privacy Shield",
+      dataResidency: "Primary: United States, Available: European Union",
+      businessStability: "Part of Microsoft GitHub, Stable revenue, Wide adoption",
+      marketPosition: "Leading CI/CD platform for GitHub users",
+      integrationCapability: "Native GitHub integration, Marketplace actions, REST API",
+      scalability: "Auto-scaling, Matrix builds, Self-hosted runners",
+      securityCertifications: "SOC 2 Type II, ISO 27001, Regular security audits",
+      references: "Microsoft, Netflix, Spotify (public case studies available)"
+    },
+    "gitlab-ci": {
+      vendorName: "GitLab CI/CD",
+      company: "GitLab Inc.",
+      productService: "Integrated CI/CD platform within GitLab ecosystem",
+      pricingModel: "Freemium: Free tier available, Premium ($19/user/month), Ultimate ($99/user/month)",
+      contractTerms: "Monthly/Annual subscriptions, Custom enterprise terms",
+      supportSLA: "24/7 for Ultimate, Business hours for Premium, Community for Free",
+      compliance: "SOC 2, ISO 27001, FedRAMP, GDPR, Cloud Security Alliance STAR",
+      dataResidency: "Multiple global regions, Self-hosted deployment option",
+      businessStability: "Public company (NASDAQ: GTLB), Growing revenue",
+      marketPosition: "Strong competitor in DevOps space, Enterprise focus",
+      integrationCapability: "Native GitLab integration, Auto DevOps, Kubernetes support",
+      scalability: "Enterprise-grade scaling, Self-hosted options, Performance monitoring",
+      securityCertifications: "SOC 2 Type II, ISO 27001, FedRAMP ATO",
+      references: "CERN, Goldman Sachs, Ticketmaster (case studies available)"
+    },
+    "jenkins": {
+      vendorName: "Jenkins",
+      company: "Jenkins Community / CloudBees (Enterprise)",
+      productService: "Open source automation server with enterprise support options",
+      pricingModel: "Open source: Free, Enterprise support: Contact for pricing",
+      contractTerms: "Open source license, Enterprise subscription terms",
+      supportSLA: "Community support, Enterprise SLA available",
+      compliance: "Depends on deployment, Enterprise compliance features available",
+      dataResidency: "Self-hosted, Full control over data location",
+      businessStability: "Large open source community, Enterprise vendor support",
+      marketPosition: "Established leader in CI/CD automation",
+      integrationCapability: "Extensive plugin ecosystem (1000+ plugins), REST API",
+      scalability: "Distributed builds, Master-slave architecture, Cloud agents",
+      securityCertifications: "Depends on deployment and configuration",
+      references: "Netflix, LinkedIn, eBay (public case studies available)"
+    },
+    "circleci": {
+      vendorName: "CircleCI",
+      company: "Circle Internet Services Inc.",
+      productService: "Cloud-native CI/CD platform with high performance focus",
+      pricingModel: "Usage-based: Free tier, Performance ($15/month), Scale ($2000/month)",
+      contractTerms: "Monthly/Annual subscriptions, Custom enterprise agreements",
+      supportSLA: "24/7 for Scale, Business hours for Performance, Community for Free",
+      compliance: "SOC 2, ISO 27001, PCI DSS, GDPR, FedRAMP",
+      dataResidency: "United States, European Union options available",
+      businessStability: "Private company, Series E funding, Growing market share",
+      marketPosition: "Strong performance focus, Developer-friendly platform",
+      integrationCapability: "REST API, Orbs ecosystem, VCS integrations",
+      scalability: "Auto-scaling, Parallelism, Resource classes",
+      securityCertifications: "SOC 2 Type II, ISO 27001, Regular penetration testing",
+      references: "Facebook, Spotify, GoPro (public case studies available)"
+    },
+    "manual": {
+      vendorName: "Manual Deployment",
+      company: "Internal Team",
+      productService: "Manual deployment and CI/CD processes",
+      pricingModel: "Internal labor costs only",
+      contractTerms: "Internal process, No external contracts",
+      supportSLA: "Internal team availability",
+      compliance: "Organization-dependent",
+      dataResidency: "Full control, On-premises",
+      businessStability: "Dependent on internal team",
+      marketPosition: "Traditional approach, Full control",
+      integrationCapability: "Custom integrations possible",
+      scalability: "Limited by manual processes",
+      securityCertifications: "Organization-dependent",
+      references: "Internal projects only"
+    }
+  };
+  
+  return details[toolId as keyof typeof details] || {
+    vendorName: "Unknown CI/CD Tool",
+    company: "Unknown Company",
+    productService: "CI/CD Platform",
+    pricingModel: "Contact vendor",
+    contractTerms: "Standard terms",
+    supportSLA: "Standard support",
+    compliance: "Standard compliance",
+    dataResidency: "Contact vendor",
+    businessStability: "Established vendor",
+    marketPosition: "Market participant",
+    integrationCapability: "Standard integrations",
+    scalability: "Standard scaling",
+    securityCertifications: "Standard security",
+    references: "Contact vendor for references"
+  }
+};
+
+export const generateCICDVendorComparison = (
+  projectName: string,
+  selectedCICDTool: string,
+  cicdTools: CICDTool[]
+): string => {
+  const repoName = projectName.trim() || "my-project"
+  const tool = cicdTools.find(t => t.id === selectedCICDTool)
+  const currentDate = new Date().toISOString().split('T')[0]
+  
+  if (!tool) {
+    return `Tool ${selectedCICDTool} not found in CI/CD tools list.`
+  }
+  
+  const vendorDetails = getCICDVendorDetails(selectedCICDTool)
+  
+  // Generate single row entry with universal vendor evaluation criteria
+  const vendorRow = [
+    vendorDetails.vendorName,
+    vendorDetails.company,
+    vendorDetails.productService,
+    vendorDetails.pricingModel,
+    vendorDetails.contractTerms,
+    vendorDetails.supportSLA,
+    vendorDetails.compliance,
+    vendorDetails.dataResidency,
+    vendorDetails.businessStability,
+    vendorDetails.marketPosition,
+    vendorDetails.integrationCapability,
+    vendorDetails.scalability,
+    vendorDetails.securityCertifications,
+    vendorDetails.references,
+    repoName,
+    currentDate,
+    "Under Evaluation"
+  ].join('\t')
+  
+  return `${vendorRow}
+
+# Vendor Entry Details for ${tool.name}
+Project: ${repoName}
+Evaluation Date: ${currentDate}
+Status: Under evaluation
+Tool Type: CI/CD Platform
 
 # Instructions:
 1. Copy the tab-separated row above

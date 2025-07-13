@@ -16,11 +16,12 @@ import { platforms } from "~/data/platforms"
 import { projectTypes, getProjectType, getArchitecturesForProjectType, getArchitecture } from "~/data/project-types"
 import { dependencyTools, getAvailableDependencyTools, getDependencyToolDocumentationUrl, isDependencyToolNativeToPlatform } from "~/data/dependency-tools"
 import { documentationTools, getAvailableDocumentationTools, getDocumentationToolUrl, isDocumentationToolNativeToPlatform } from "~/data/documentation-tools"
+import { cicdTools, getAvailableCICDTools, getCICDToolDocumentationUrl, isCICDToolNativeToPlatform } from "~/data/ci-cd-tools"
 
 // Utility imports
 import { generateTerraformCode, generatePulumiCode, generateCloudFormationCode, generateCDKCode } from "~/utils/code-generators"
-import { generateADR, generateDependencyADR, generateDocumentationADR, generateArchitectureADR } from "~/utils/adr-generators"
-import { generateVendorComparison, generateDependencyVendorComparison, generateDocumentationVendorComparison } from "~/utils/vendor-utils"
+import { generateADR, generateDependencyADR, generateDocumentationADR, generateArchitectureADR, generateCICDADR } from "~/utils/adr-generators"
+import { generateVendorComparison, generateDependencyVendorComparison, generateDocumentationVendorComparison, generateCICDVendorComparison } from "~/utils/vendor-utils"
 import { generateArchitectureDiagram } from "~/utils/architecture-diagrams"
 
 export default function Project() {
@@ -30,6 +31,7 @@ export default function Project() {
   const [selectedArchitecture, setSelectedArchitecture] = useState("")
   const [selectedDepTool, setSelectedDepTool] = useState("dependabot")
   const [selectedDocTool, setSelectedDocTool] = useState("readme")
+  const [selectedCICDTool, setSelectedCICDTool] = useState("github-actions")
   const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const { isReady, error } = useDB()
@@ -74,6 +76,7 @@ export default function Project() {
       setSelectedArchitecture(currentProject.architecture || "")
       setSelectedDepTool(currentProject.dependencyTool)
       setSelectedDocTool(currentProject.documentationTool)
+      setSelectedCICDTool(currentProject.cicdTool || "github-actions")
     }
   }, [currentProject])
 
@@ -108,21 +111,21 @@ export default function Project() {
     }
   }, [selectedPlatform, selectedDocTool])
 
-  // Reset architecture selection when project type changes if current selection is not available
+  // Reset CI/CD tool selection when platform changes if current selection is not available
   useEffect(() => {
-    const availableArchitectures = getArchitecturesForProjectType(selectedProjectType)
-    const isCurrentArchitectureAvailable = availableArchitectures.some(arch => arch.id === selectedArchitecture)
+    const availableCICDTools = getAvailableCICDTools(selectedPlatform)
+    const isCurrentCICDToolAvailable = availableCICDTools.some(tool => tool.id === selectedCICDTool)
     
-    if (!isCurrentArchitectureAvailable && availableArchitectures.length > 0) {
-      // Set to the first architecture as default
-      setSelectedArchitecture(availableArchitectures[0].id)
-      // Reset diagram visibility when architecture changes
-      setShowArchitectureDiagram(false)
-    } else if (availableArchitectures.length === 0) {
-      setSelectedArchitecture("")
-      setShowArchitectureDiagram(false)
+    if (!isCurrentCICDToolAvailable && availableCICDTools.length > 0) {
+      // Set to platform-specific tool or default
+      const platformSpecificTool = availableCICDTools.find(tool => 
+        (selectedPlatform === 'github' && tool.id === 'github-actions') ||
+        (selectedPlatform === 'gitlab' && tool.id === 'gitlab-ci') ||
+        (selectedPlatform === 'bitbucket' && tool.id === 'bitbucket-pipelines')
+      )
+      setSelectedCICDTool(platformSpecificTool?.id || availableCICDTools[0].id)
     }
-  }, [selectedProjectType, selectedArchitecture])
+  }, [selectedPlatform, selectedCICDTool])
 
   const handleCreateRepository = async () => {
     if (projectName.trim()) {
@@ -136,7 +139,8 @@ export default function Project() {
             projectType: selectedProjectType,
             architecture: selectedArchitecture,
             dependencyTool: selectedDepTool,
-            documentationTool: selectedDocTool
+            documentationTool: selectedDocTool,
+            cicdTool: selectedCICDTool
           })
 
           // Open the platform URL
@@ -169,6 +173,15 @@ export default function Project() {
     }
   }
 
+  const handleConfigureCICDTool = () => {
+    const url = getCICDToolDocumentationUrl(selectedCICDTool)
+    if (url !== "#") {
+      window.open(url, '_blank')
+    } else {
+      alert("Manual CI/CD setup doesn't have specific documentation. Consider setting up deployment scripts or automation processes.")
+    }
+  }
+
   const saveData = async () => {
     if (!isReady || !projectName.trim()) return
 
@@ -180,7 +193,8 @@ export default function Project() {
         projectType: selectedProjectType,
         architecture: selectedArchitecture,
         dependencyTool: selectedDepTool,
-        documentationTool: selectedDocTool
+        documentationTool: selectedDocTool,
+        cicdTool: selectedCICDTool
       })
     } catch (error) {
       console.error('Failed to save data:', error)
@@ -203,6 +217,7 @@ export default function Project() {
       setSelectedArchitecture("")
       setSelectedDepTool("dependabot")
       setSelectedDocTool("readme")
+      setSelectedCICDTool("github-actions")
       setShowIaC(false)
     } catch (error) {
       console.error('Failed to clear data:', error)
@@ -211,11 +226,11 @@ export default function Project() {
 
   // Auto-save when data changes
   useEffect(() => {
-    if (isReady && (projectName || selectedPlatform || selectedProjectType || selectedArchitecture || selectedDepTool || selectedDocTool)) {
+    if (isReady && (projectName || selectedPlatform || selectedProjectType || selectedArchitecture || selectedDepTool || selectedDocTool || selectedCICDTool)) {
       const timeoutId = setTimeout(saveData, 1000)
       return () => clearTimeout(timeoutId)
     }
-  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedDepTool, selectedDocTool, isReady])
+  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedDepTool, selectedDocTool, selectedCICDTool, isReady])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -919,6 +934,115 @@ export default function Project() {
                 ) : (
                   <p className="text-xs text-muted-foreground">
                     Vendor entry for <strong>{documentationTools.find(t => t.id === selectedDocTool)?.name}</strong> ready for your evaluation spreadsheet
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* CI/CD Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <span className="text-xl">{cicdTools.find(t => t.id === selectedCICDTool)?.emoji}</span>
+              <span>Continuous Integration</span>
+            </CardTitle>
+            <CardDescription>
+              Automate build, test, and deployment processes
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="cicd-tool-select" className="text-sm font-medium">
+                CI/CD Platform
+              </label>
+              <Select value={selectedCICDTool} onValueChange={setSelectedCICDTool}>
+                <SelectTrigger id="cicd-tool-select">
+                  <SelectValue placeholder="Select a CI/CD platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableCICDTools(selectedPlatform).map((tool) => (
+                    <SelectItem key={tool.id} value={tool.id}>
+                      <div className="flex items-center space-x-2">
+                        <span>{tool.emoji}</span>
+                        <span>{tool.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Tool Info */}
+            <div className="p-3 bg-muted rounded-lg">
+              <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
+                <span>{cicdTools.find(t => t.id === selectedCICDTool)?.emoji}</span>
+                <span>{cicdTools.find(t => t.id === selectedCICDTool)?.name}</span>
+              </h4>
+              <p className="text-xs text-muted-foreground mb-1">
+                {cicdTools.find(t => t.id === selectedCICDTool)?.description}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <strong>Best for:</strong> {cicdTools.find(t => t.id === selectedCICDTool)?.bestFor}
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button 
+                className="flex items-center space-x-2"
+                disabled={!projectName.trim()}
+                onClick={handleConfigureCICDTool}
+              >
+                <span>{cicdTools.find(t => t.id === selectedCICDTool)?.emoji}</span>
+                <span>Setup CI/CD</span>
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* ADR Section */}
+            {projectName.trim() && (
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">📝 Architecture Decision Record</h4>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(generateCICDADR(projectName, selectedCICDTool, cicdTools))}
+                  >
+                    Copy ADR
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Document your CI/CD platform decision for future reference
+                </p>
+              </div>
+            )}
+
+            {/* Vendor Entry Section */}
+            {projectName.trim() && (
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">📊 Vendor Entry</h4>
+                  {!isCICDToolNativeToPlatform(selectedPlatform, selectedCICDTool) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copyToClipboard(generateCICDVendorComparison(projectName, selectedCICDTool, cicdTools))}
+                    >
+                      Copy Vendor Row
+                    </Button>
+                  )}
+                </div>
+                {isCICDToolNativeToPlatform(selectedPlatform, selectedCICDTool) ? (
+                  <div className="p-2 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-xs text-green-700">
+                      ✅ <strong>{cicdTools.find(t => t.id === selectedCICDTool)?.name}</strong> is already included with {platforms.find(p => p.id === selectedPlatform)?.name}. No separate vendor evaluation needed.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Vendor entry for <strong>{cicdTools.find(t => t.id === selectedCICDTool)?.name}</strong> ready for your evaluation spreadsheet
                   </p>
                 )}
               </div>

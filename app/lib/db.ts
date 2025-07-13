@@ -11,6 +11,7 @@ export interface Project {
   architecture?: string;
   dependencyTool: string;
   documentationTool: string;
+  cicdTool: string;
   createdAt: Date;
   lastModified: Date;
   status: 'active' | 'archived' | 'draft';
@@ -184,6 +185,7 @@ class CreateStackDB {
     architecture?: string;
     dependencyTool: string;
     documentationTool: string;
+    cicdTool: string;
   }): Promise<Project> {
     const currentProject = await this.getCurrentProject();
     
@@ -197,6 +199,7 @@ class CreateStackDB {
         architecture: projectData.architecture,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
+        cicdTool: projectData.cicdTool,
         lastModified: new Date()
       };
       await this.saveProject(updatedProject);
@@ -211,6 +214,7 @@ class CreateStackDB {
         architecture: projectData.architecture,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
+        cicdTool: projectData.cicdTool,
         createdAt: new Date(),
         lastModified: new Date(),
         status: 'draft'
@@ -362,6 +366,7 @@ export function useCurrentProject() {
     architecture?: string;
     dependencyTool: string;
     documentationTool: string;
+    cicdTool: string;
   }) => {
     const project = await db.saveCurrentProject(projectData);
     setCurrentProject(project);
