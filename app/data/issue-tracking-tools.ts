@@ -11,7 +11,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Free for public repos, included with GitHub plans",
     features: ["Issue templates", "Labels & milestones", "Project boards", "Discussions", "Assignees", "Automation"],
     url: "https://docs.github.com/en/issues",
-    targetPersonas: ["developer", "product-manager", "qa-tester"],
+    targetPersonas: ["developer", "product-owner", "qa-tester"],
     complexityLevel: "beginner"
   },
   {
@@ -24,7 +24,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Free tier, Premium from $19/user/month",
     features: ["Issue boards", "Epics", "Time tracking", "Requirements", "Health status", "Iterations"],
     url: "https://docs.gitlab.com/ee/user/project/issues/",
-    targetPersonas: ["developer", "product-manager", "devops", "qa-tester"],
+    targetPersonas: ["developer", "product-owner", "devops", "qa-tester"],
     complexityLevel: "intermediate"
   },
   {
@@ -37,7 +37,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Free up to 10 users, Standard from $7/user/month",
     features: ["Agile boards", "Custom workflows", "Advanced reporting", "JQL search", "Automation", "Integrations"],
     url: "https://www.atlassian.com/software/jira",
-    targetPersonas: ["product-manager", "developer", "qa-tester", "stakeholder"],
+    targetPersonas: ["product-owner", "developer", "qa-tester", "stakeholder"],
     complexityLevel: "advanced"
   },
   {
@@ -50,7 +50,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Free up to 10 users, Standard from $8/user/month",
     features: ["Fast interface", "Cycles", "Roadmaps", "Git integration", "Keyboard shortcuts", "SLA tracking"],
     url: "https://linear.app/",
-    targetPersonas: ["product-manager", "developer", "designer"],
+    targetPersonas: ["product-owner", "developer", "designer"],
     complexityLevel: "intermediate"
   },
   {
@@ -63,7 +63,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Free up to 15 users, Premium from $10.99/user/month",
     features: ["Multiple project views", "Task dependencies", "Timeline view", "Custom fields", "Proofing", "Portfolios"],
     url: "https://asana.com/",
-    targetPersonas: ["product-manager", "stakeholder", "designer", "technical-writer"],
+    targetPersonas: ["product-owner", "stakeholder", "designer", "technical-writer"],
     complexityLevel: "beginner"
   },
   {
@@ -76,7 +76,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Free, Standard from $5/user/month",
     features: ["Kanban boards", "Power-Ups", "Automation", "Calendar view", "Team collaboration", "Mobile apps"],
     url: "https://trello.com/",
-    targetPersonas: ["product-manager", "designer", "stakeholder"],
+    targetPersonas: ["product-owner", "designer", "stakeholder"],
     complexityLevel: "beginner"
   },
   {
@@ -89,7 +89,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Free for personal use, Plus from $8/user/month",
     features: ["Database views", "Templates", "Team wikis", "Custom properties", "Automation", "AI features"],
     url: "https://www.notion.so/",
-    targetPersonas: ["product-manager", "technical-writer", "designer", "stakeholder"],
+    targetPersonas: ["product-owner", "technical-writer", "designer", "stakeholder"],
     complexityLevel: "intermediate"
   },
   {
@@ -102,7 +102,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Free up to 5 users, Basic from $6/user/month",
     features: ["Work items", "Backlogs", "Sprints", "Queries", "Dashboards", "Azure integration"],
     url: "https://azure.microsoft.com/en-us/products/devops/boards/",
-    targetPersonas: ["developer", "product-manager", "devops", "stakeholder"],
+    targetPersonas: ["developer", "product-owner", "devops", "stakeholder"],
     complexityLevel: "intermediate"
   },
   {
@@ -115,7 +115,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Basic from $8/user/month",
     features: ["Custom workflows", "Automation", "Dashboards", "Time tracking", "Forms", "Integrations"],
     url: "https://monday.com/",
-    targetPersonas: ["product-manager", "stakeholder", "designer"],
+    targetPersonas: ["product-owner", "stakeholder", "designer"],
     complexityLevel: "intermediate"
   },
   {
@@ -128,7 +128,7 @@ export const issueTrackingTools: IssueTrackingTool[] = [
     pricing: "Free tier, Unlimited from $7/user/month",
     features: ["Multiple views", "Goals", "Docs", "Time tracking", "Automation", "Custom fields"],
     url: "https://clickup.com/",
-    targetPersonas: ["product-manager", "developer", "designer", "qa-tester"],
+    targetPersonas: ["product-owner", "developer", "designer", "qa-tester"],
     complexityLevel: "advanced"
   }
 ];

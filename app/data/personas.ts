@@ -10,10 +10,10 @@ export const teamPersonas: TeamPersona[] = [
     commonTools: ["GitHub", "GitLab", "VS Code", "Docker", "npm", "yarn", "Jest", "ESLint"]
   },
   {
-    id: "product-manager",
-    name: "Product Manager",
+    id: "product-owner",
+    name: "Product Owner",
     emoji: "📋",
-    description: "Product managers who define requirements, prioritize features, and track progress",
+    description: "Product owners who define requirements, prioritize features, and track progress",
     primaryFocus: "Feature planning, roadmap management, stakeholder communication",
     commonTools: ["Jira", "Asana", "Linear", "Notion", "Confluence", "Figma", "Miro"]
   },

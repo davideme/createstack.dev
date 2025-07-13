@@ -34,7 +34,7 @@ export default function Project() {
   const [selectedDocTool, setSelectedDocTool] = useState("readme")
   const [selectedCICDTool, setSelectedCICDTool] = useState("github-actions")
   const [selectedIssueTrackingTool, setSelectedIssueTrackingTool] = useState("github-issues")
-  const [selectedPersonas, setSelectedPersonas] = useState<string[]>(["developer"])
+  const [selectedPersonas, setSelectedPersonas] = useState<string[]>(["developer", "product-owner"])
   const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const { isReady, error } = useDB()
@@ -81,7 +81,7 @@ export default function Project() {
       setSelectedDocTool(currentProject.documentationTool)
       setSelectedCICDTool(currentProject.cicdTool || "github-actions")
       setSelectedIssueTrackingTool(currentProject.issueTrackingTool || "github-issues")
-      setSelectedPersonas(currentProject.teamPersonas || ["developer"])
+      setSelectedPersonas(currentProject.teamPersonas || ["developer", "product-owner"])
     }
   }, [currentProject])
 
@@ -164,7 +164,7 @@ export default function Project() {
       setSelectedDocTool("readme")
       setSelectedCICDTool("github-actions")
       setSelectedIssueTrackingTool("github-issues")
-      setSelectedPersonas(["developer"])
+      setSelectedPersonas(["developer", "product-owner"])
       setShowIaC(false)
     } catch (error) {
       console.error('Failed to clear data:', error)
@@ -234,6 +234,92 @@ export default function Project() {
       headerActions={clearSavedDataAction}
     >
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Project Setup Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <span className="text-xl">🚀</span>
+              <span>Project Setup</span>
+            </CardTitle>
+            <CardDescription>
+              Define your project name and team composition to get personalized tool recommendations
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="project-name" className="text-sm font-medium">
+                Project Name
+              </label>
+              <Input
+                id="project-name"
+                placeholder="Enter your project name..."
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            {/* Team Personas Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Team Personas</label>
+              <p className="text-xs text-muted-foreground">
+                Select the roles working on this project to get personalized tool recommendations
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {teamPersonas.map((persona) => {
+                  const isSelected = selectedPersonas.includes(persona.id);
+                  return (
+                    <Badge
+                      key={persona.id}
+                      variant={isSelected ? "default" : "outline"}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected 
+                          ? "bg-primary text-primary-foreground" 
+                          : "hover:bg-muted"
+                      }`}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedPersonas(selectedPersonas.filter(id => id !== persona.id));
+                        } else {
+                          setSelectedPersonas([...selectedPersonas, persona.id]);
+                        }
+                      }}
+                    >
+                      <span className="mr-1">{persona.emoji}</span>
+                      {persona.name}
+                    </Badge>
+                  );
+                })}
+              </div>
+              {selectedPersonas.length > 0 && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs text-blue-700">
+                    <strong>Selected:</strong> {selectedPersonas.map(id => 
+                      teamPersonas.find(p => p.id === id)?.name
+                    ).join(", ")}
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Tools will be filtered and prioritized based on these roles
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Project Status */}
+            {projectName.trim() && selectedPersonas.length > 0 && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm font-medium text-green-800 mb-1">
+                  ✅ Project Ready
+                </p>
+                <p className="text-xs text-green-700">
+                  <strong>{projectName}</strong> is configured for a team with {selectedPersonas.length} persona{selectedPersonas.length > 1 ? 's' : ''}. 
+                  Tool recommendations will be tailored to your team composition.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Project Type Card */}
         <Card>
           <CardHeader>
@@ -383,85 +469,25 @@ export default function Project() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="platform-select" className="text-sm font-medium">
-                  Platform
-                </label>
-                <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-                  <SelectTrigger id="platform-select">
-                    <SelectValue placeholder="Select a platform" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {platforms.map((platform) => (
-                      <SelectItem key={platform.id} value={platform.id}>
-                        <div className="flex items-center space-x-2">
-                          <span>{platform.emoji}</span>
-                          <span>{platform.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="project-name" className="text-sm font-medium">
-                  Project Name
-                </label>
-                <Input
-                  id="project-name"
-                  placeholder="Enter your project name..."
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-            </div>
-            
-            {/* Team Personas Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Team Personas</label>
-              <p className="text-xs text-muted-foreground">
-                Select the roles working on this project to get personalized tool recommendations
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {teamPersonas.map((persona) => {
-                  const isSelected = selectedPersonas.includes(persona.id);
-                  return (
-                    <Badge
-                      key={persona.id}
-                      variant={isSelected ? "default" : "outline"}
-                      className={`cursor-pointer transition-colors ${
-                        isSelected 
-                          ? "bg-primary text-primary-foreground" 
-                          : "hover:bg-muted"
-                      }`}
-                      onClick={() => {
-                        if (isSelected) {
-                          setSelectedPersonas(selectedPersonas.filter(id => id !== persona.id));
-                        } else {
-                          setSelectedPersonas([...selectedPersonas, persona.id]);
-                        }
-                      }}
-                    >
-                      <span className="mr-1">{persona.emoji}</span>
-                      {persona.name}
-                    </Badge>
-                  );
-                })}
-              </div>
-              {selectedPersonas.length > 0 && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-xs text-blue-700">
-                    <strong>Selected:</strong> {selectedPersonas.map(id => 
-                      teamPersonas.find(p => p.id === id)?.name
-                    ).join(", ")}
-                  </p>
-                  <p className="text-xs text-blue-700 mt-1">
-                    Tools will be filtered and prioritized based on these roles
-                  </p>
-                </div>
-              )}
+              <label htmlFor="platform-select" className="text-sm font-medium">
+                Platform
+              </label>
+              <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+                <SelectTrigger id="platform-select">
+                  <SelectValue placeholder="Select a platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  {platforms.map((platform) => (
+                    <SelectItem key={platform.id} value={platform.id}>
+                      <div className="flex items-center space-x-2">
+                        <span>{platform.emoji}</span>
+                        <span>{platform.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             {/* Platform Info */}
