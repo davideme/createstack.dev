@@ -11,6 +11,7 @@ import { DependencyManagementCard } from "~/components/cards/dependency-manageme
 import { DocumentationCard } from "~/components/cards/documentation-card"
 import { CICDCard } from "~/components/cards/cicd-card"
 import { IssueTrackingCard } from "~/components/cards/issue-tracking-card"
+import { CloudPlatformCard } from "~/components/cards/cloud-platform-card"
 import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useDB, useCurrentProject } from "~/lib/db"
@@ -30,6 +31,7 @@ export default function Project() {
   const [selectedPlatform, setSelectedPlatform] = useState("github")
   const [selectedProjectType, setSelectedProjectType] = useState("web-app")
   const [selectedArchitecture, setSelectedArchitecture] = useState("")
+  const [selectedCloudPlatform, setSelectedCloudPlatform] = useState("aws")
   const [selectedDepTool, setSelectedDepTool] = useState("dependabot")
   const [selectedDocTool, setSelectedDocTool] = useState("readme")
   const [selectedCICDTool, setSelectedCICDTool] = useState("github-actions")
@@ -77,6 +79,7 @@ export default function Project() {
       setSelectedPlatform(currentProject.platform)
       setSelectedProjectType(currentProject.projectType || "web-app")
       setSelectedArchitecture(currentProject.architecture || "")
+      setSelectedCloudPlatform(currentProject.cloudPlatform || "aws")
       setSelectedDepTool(currentProject.dependencyTool)
       setSelectedDocTool(currentProject.documentationTool)
       setSelectedCICDTool(currentProject.cicdTool || "github-actions")
@@ -109,6 +112,7 @@ export default function Project() {
             platform: selectedPlatform,
             projectType: selectedProjectType,
             architecture: selectedArchitecture,
+            cloudPlatform: selectedCloudPlatform,
             dependencyTool: selectedDepTool,
             documentationTool: selectedDocTool,
             cicdTool: selectedCICDTool,
@@ -137,6 +141,7 @@ export default function Project() {
         platform: selectedPlatform,
         projectType: selectedProjectType,
         architecture: selectedArchitecture,
+        cloudPlatform: selectedCloudPlatform,
         dependencyTool: selectedDepTool,
         documentationTool: selectedDocTool,
         cicdTool: selectedCICDTool,
@@ -160,6 +165,7 @@ export default function Project() {
       setSelectedPlatform("github")
       setSelectedProjectType("web-app")
       setSelectedArchitecture("")
+      setSelectedCloudPlatform("aws")
       setSelectedDepTool("dependabot")
       setSelectedDocTool("readme")
       setSelectedCICDTool("github-actions")
@@ -173,11 +179,11 @@ export default function Project() {
 
   // Auto-save when data changes
   useEffect(() => {
-    if (isReady && (projectName || selectedPlatform || selectedProjectType || selectedArchitecture || selectedDepTool || selectedDocTool || selectedCICDTool)) {
+    if (isReady && (projectName || selectedPlatform || selectedProjectType || selectedArchitecture || selectedCloudPlatform || selectedDepTool || selectedDocTool || selectedCICDTool)) {
       const timeoutId = setTimeout(saveData, 1000)
       return () => clearTimeout(timeoutId)
     }
-  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedDepTool, selectedDocTool, selectedCICDTool, selectedIssueTrackingTool, selectedPersonas, isReady])
+  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedCloudPlatform, selectedDepTool, selectedDocTool, selectedCICDTool, selectedIssueTrackingTool, selectedPersonas, isReady])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -456,6 +462,16 @@ export default function Project() {
             )}
           </CardContent>
         </Card>
+
+        {/* Cloud Platform Card */}
+        <CloudPlatformCard
+          projectName={projectName}
+          selectedCloudPlatform={selectedCloudPlatform}
+          selectedArchitecture={selectedArchitecture}
+          selectedPersonas={selectedPersonas}
+          onCloudPlatformChange={setSelectedCloudPlatform}
+          onCopyToClipboard={copyToClipboard}
+        />
 
         {/* Code Hosting Card */}
         <Card>

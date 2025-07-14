@@ -86,3 +86,20 @@ export interface IssueTrackingTool {
   targetPersonas: string[]; // Array of persona IDs
   complexityLevel: 'beginner' | 'intermediate' | 'advanced';
 }
+
+export interface CloudPlatform {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  bestFor: string;
+  pricing: string;
+  features: string[];
+  url: string;
+  targetPersonas: string[]; // Array of persona IDs
+  complexityLevel: 'beginner' | 'intermediate' | 'advanced';
+  supportedArchitectures: string[]; // Array of architecture IDs
+  iacSupport: string[]; // Array of IaC tool IDs
+  regions: string[];
+  complianceCertifications: string[];
+}

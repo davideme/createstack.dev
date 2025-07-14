@@ -9,6 +9,7 @@ export interface Project {
   platform: string;
   projectType: string;
   architecture?: string;
+  cloudPlatform?: string;
   dependencyTool: string;
   documentationTool: string;
   cicdTool: string;
@@ -185,6 +186,7 @@ class CreateStackDB {
     platform: string;
     projectType: string;
     architecture?: string;
+    cloudPlatform?: string;
     dependencyTool: string;
     documentationTool: string;
     cicdTool: string;
@@ -201,6 +203,7 @@ class CreateStackDB {
         platform: projectData.platform,
         projectType: projectData.projectType,
         architecture: projectData.architecture,
+        cloudPlatform: projectData.cloudPlatform,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
         cicdTool: projectData.cicdTool,
@@ -218,6 +221,7 @@ class CreateStackDB {
         platform: projectData.platform,
         projectType: projectData.projectType,
         architecture: projectData.architecture,
+        cloudPlatform: projectData.cloudPlatform,
         dependencyTool: projectData.dependencyTool,
         documentationTool: projectData.documentationTool,
         cicdTool: projectData.cicdTool,
@@ -372,6 +376,7 @@ export function useCurrentProject() {
     platform: string;
     projectType: string;
     architecture?: string;
+    cloudPlatform?: string;
     dependencyTool: string;
     documentationTool: string;
     cicdTool: string;
