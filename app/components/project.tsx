@@ -463,13 +463,22 @@ export default function Project() {
           </CardContent>
         </Card>
 
-        {/* Cloud Platform Card */}
-        <CloudPlatformCard
+        {/* Documentation Card - Moved up for tech specs and product specifications */}
+        <DocumentationCard
           projectName={projectName}
-          selectedCloudPlatform={selectedCloudPlatform}
-          selectedArchitecture={selectedArchitecture}
+          selectedPlatform={selectedPlatform}
+          selectedDocTool={selectedDocTool}
+          onDocToolChange={setSelectedDocTool}
+          onCopyToClipboard={copyToClipboard}
+        />
+
+        {/* Issue Tracking Card - For project management */}
+        <IssueTrackingCard
+          projectName={projectName}
+          selectedPlatform={selectedPlatform}
+          selectedIssueTrackingTool={selectedIssueTrackingTool}
           selectedPersonas={selectedPersonas}
-          onCloudPlatformChange={setSelectedCloudPlatform}
+          onIssueTrackingToolChange={setSelectedIssueTrackingTool}
           onCopyToClipboard={copyToClipboard}
         />
 
@@ -593,6 +602,15 @@ export default function Project() {
           </CardContent>
         </Card>
 
+        {/* CI/CD Card - Early automation for development workflow */}
+        <CICDCard
+          projectName={projectName}
+          selectedPlatform={selectedPlatform}
+          selectedCICDTool={selectedCICDTool}
+          onCICDToolChange={setSelectedCICDTool}
+          onCopyToClipboard={copyToClipboard}
+        />
+
         {/* Dependencies Management Card */}
         <DependencyManagementCard
           projectName={projectName}
@@ -602,31 +620,13 @@ export default function Project() {
           onCopyToClipboard={copyToClipboard}
         />
 
-        {/* Documentation Card */}
-        <DocumentationCard
+        {/* Cloud Platform Card - After all development decisions */}
+        <CloudPlatformCard
           projectName={projectName}
-          selectedPlatform={selectedPlatform}
-          selectedDocTool={selectedDocTool}
-          onDocToolChange={setSelectedDocTool}
-          onCopyToClipboard={copyToClipboard}
-        />
-
-        {/* CI/CD Card */}
-        <CICDCard
-          projectName={projectName}
-          selectedPlatform={selectedPlatform}
-          selectedCICDTool={selectedCICDTool}
-          onCICDToolChange={setSelectedCICDTool}
-          onCopyToClipboard={copyToClipboard}
-        />
-
-        {/* Issue Tracking Card */}
-        <IssueTrackingCard
-          projectName={projectName}
-          selectedPlatform={selectedPlatform}
-          selectedIssueTrackingTool={selectedIssueTrackingTool}
+          selectedCloudPlatform={selectedCloudPlatform}
+          selectedArchitecture={selectedArchitecture}
           selectedPersonas={selectedPersonas}
-          onIssueTrackingToolChange={setSelectedIssueTrackingTool}
+          onCloudPlatformChange={setSelectedCloudPlatform}
           onCopyToClipboard={copyToClipboard}
         />
       </div>
