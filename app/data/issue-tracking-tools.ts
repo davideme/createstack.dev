@@ -144,12 +144,11 @@ export function getAvailableIssueTrackingTools(platform: string, personas: strin
       return { ...tool, relevanceScore };
     })
     .sort((a, b) => {
-      // Sort by relevance first, then by complexity (simpler first)
+      // Sort by relevance first, then alphabetically
       if (b.relevanceScore !== a.relevanceScore) {
         return b.relevanceScore - a.relevanceScore;
       }
-      const complexityOrder = { beginner: 1, intermediate: 2, advanced: 3 };
-      return complexityOrder[a.complexityLevel] - complexityOrder[b.complexityLevel];
+      return a.name.localeCompare(b.name);
     });
   }
   

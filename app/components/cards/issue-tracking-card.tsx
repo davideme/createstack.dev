@@ -62,11 +62,6 @@ export function IssueTrackingCard({
                   <div className="flex items-center space-x-2">
                     <span>{tool.emoji}</span>
                     <span>{tool.name}</span>
-                    {tool.complexityLevel && (
-                      <span className="text-xs text-muted-foreground">
-                        ({tool.complexityLevel})
-                      </span>
-                    )}
                   </div>
                 </SelectItem>
               ))}
@@ -79,11 +74,6 @@ export function IssueTrackingCard({
           <h4 className="text-sm font-medium mb-1 flex items-center space-x-2">
             <span>{selectedTool?.emoji}</span>
             <span>{selectedTool?.name}</span>
-            {selectedTool?.complexityLevel && (
-              <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-                {selectedTool.complexityLevel}
-              </span>
-            )}
           </h4>
           <p className="text-xs text-muted-foreground mb-1">
             {selectedTool?.description}
