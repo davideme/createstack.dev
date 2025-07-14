@@ -463,7 +463,8 @@ export default function Project() {
           </CardContent>
         </Card>
 
-        {/* Documentation Card - Moved up for tech specs and product specifications */}
+        {/* PLAN PHASE - DevOps Lifecycle */}
+        {/* Documentation Card - PLAN: Tech specs and product specifications */}
         <DocumentationCard
           projectName={projectName}
           selectedPlatform={selectedPlatform}
@@ -472,7 +473,7 @@ export default function Project() {
           onCopyToClipboard={copyToClipboard}
         />
 
-        {/* Issue Tracking Card - For project management */}
+        {/* Issue Tracking Card - PLAN: Project management and planning */}
         <IssueTrackingCard
           projectName={projectName}
           selectedPlatform={selectedPlatform}
@@ -482,7 +483,8 @@ export default function Project() {
           onCopyToClipboard={copyToClipboard}
         />
 
-        {/* Code Hosting Card */}
+        {/* CODE PHASE - DevOps Lifecycle */}
+        {/* Code Hosting Card - CODE: Version control and collaboration */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -602,16 +604,7 @@ export default function Project() {
           </CardContent>
         </Card>
 
-        {/* CI/CD Card - Early automation for development workflow */}
-        <CICDCard
-          projectName={projectName}
-          selectedPlatform={selectedPlatform}
-          selectedCICDTool={selectedCICDTool}
-          onCICDToolChange={setSelectedCICDTool}
-          onCopyToClipboard={copyToClipboard}
-        />
-
-        {/* Dependencies Management Card */}
+        {/* Dependencies Management Card - CODE: Package management */}
         <DependencyManagementCard
           projectName={projectName}
           selectedPlatform={selectedPlatform}
@@ -620,7 +613,18 @@ export default function Project() {
           onCopyToClipboard={copyToClipboard}
         />
 
-        {/* Cloud Platform Card - After all development decisions */}
+        {/* BUILD & TEST PHASE - DevOps Lifecycle */}
+        {/* CI/CD Card - BUILD/TEST: Continuous integration and testing */}
+        <CICDCard
+          projectName={projectName}
+          selectedPlatform={selectedPlatform}
+          selectedCICDTool={selectedCICDTool}
+          onCICDToolChange={setSelectedCICDTool}
+          onCopyToClipboard={copyToClipboard}
+        />
+
+        {/* DEPLOY & OPERATE PHASE - DevOps Lifecycle */}
+        {/* Cloud Platform Card - DEPLOY/OPERATE: Infrastructure and deployment */}
         <CloudPlatformCard
           projectName={projectName}
           selectedCloudPlatform={selectedCloudPlatform}
