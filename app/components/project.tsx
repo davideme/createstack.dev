@@ -14,7 +14,7 @@ import { IssueTrackingCard } from "~/components/cards/issue-tracking-card"
 import { CloudPlatformCard } from "~/components/cards/cloud-platform-card"
 import { FeatureFlagCard } from "~/components/cards/feature-flag-card"
 import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useDB, useCurrentProject } from "~/lib/db"
 
 // Data imports
@@ -41,6 +41,9 @@ export default function Project() {
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>(["developer", "product-owner"])
   const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  
+  // Track if we're loading data from database to prevent auto-save loops
+  const isLoadingFromDB = useRef(false)
   const { isReady, error } = useDB()
   const { currentProject, saveCurrentProject, clearCurrentProject } = useCurrentProject()
 
@@ -77,6 +80,7 @@ export default function Project() {
   // Load current project data when available
   useEffect(() => {
     if (currentProject) {
+      isLoadingFromDB.current = true
       setProjectName(currentProject.name)
       setSelectedPlatform(currentProject.platform)
       setSelectedProjectType(currentProject.projectType || "web-app")
@@ -88,6 +92,10 @@ export default function Project() {
       setSelectedIssueTrackingTool(currentProject.issueTrackingTool || "github-issues")
       setSelectedFeatureFlagTool(currentProject.featureFlagTool || "configcat")
       setSelectedPersonas(currentProject.teamPersonas || ["developer", "product-owner"])
+      // Reset loading flag after a short delay to allow state updates to complete
+      setTimeout(() => {
+        isLoadingFromDB.current = false
+      }, 100)
     }
   }, [currentProject])
 
@@ -185,7 +193,7 @@ export default function Project() {
 
   // Auto-save when data changes
   useEffect(() => {
-    if (isReady && (projectName || selectedPlatform || selectedProjectType || selectedArchitecture || selectedCloudPlatform || selectedDepTool || selectedDocTool || selectedCICDTool || selectedFeatureFlagTool)) {
+    if (isReady && projectName.trim() && !isLoadingFromDB.current) {
       const timeoutId = setTimeout(saveData, 1000)
       return () => clearTimeout(timeoutId)
     }
