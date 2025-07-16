@@ -103,3 +103,17 @@ export interface CloudPlatform {
   regions: string[];
   complianceCertifications: string[];
 }
+
+export interface FeatureFlagTool {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  platform: string;
+  bestFor: string;
+  pricing: string;
+  features: string[];
+  url: string;
+  targetPersonas: string[]; // Array of persona IDs
+  complexityLevel: 'beginner' | 'intermediate' | 'advanced';
+}

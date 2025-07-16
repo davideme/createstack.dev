@@ -12,6 +12,7 @@ import { DocumentationCard } from "~/components/cards/documentation-card"
 import { CICDCard } from "~/components/cards/cicd-card"
 import { IssueTrackingCard } from "~/components/cards/issue-tracking-card"
 import { CloudPlatformCard } from "~/components/cards/cloud-platform-card"
+import { FeatureFlagCard } from "~/components/cards/feature-flag-card"
 import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useDB, useCurrentProject } from "~/lib/db"
@@ -36,6 +37,7 @@ export default function Project() {
   const [selectedDocTool, setSelectedDocTool] = useState("readme")
   const [selectedCICDTool, setSelectedCICDTool] = useState("github-actions")
   const [selectedIssueTrackingTool, setSelectedIssueTrackingTool] = useState("github-issues")
+  const [selectedFeatureFlagTool, setSelectedFeatureFlagTool] = useState("configcat")
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>(["developer", "product-owner"])
   const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -84,6 +86,7 @@ export default function Project() {
       setSelectedDocTool(currentProject.documentationTool)
       setSelectedCICDTool(currentProject.cicdTool || "github-actions")
       setSelectedIssueTrackingTool(currentProject.issueTrackingTool || "github-issues")
+      setSelectedFeatureFlagTool(currentProject.featureFlagTool || "configcat")
       setSelectedPersonas(currentProject.teamPersonas || ["developer", "product-owner"])
     }
   }, [currentProject])
@@ -117,6 +120,7 @@ export default function Project() {
             documentationTool: selectedDocTool,
             cicdTool: selectedCICDTool,
             issueTrackingTool: selectedIssueTrackingTool,
+            featureFlagTool: selectedFeatureFlagTool,
             teamPersonas: selectedPersonas
           })
 
@@ -146,6 +150,7 @@ export default function Project() {
         documentationTool: selectedDocTool,
         cicdTool: selectedCICDTool,
         issueTrackingTool: selectedIssueTrackingTool,
+        featureFlagTool: selectedFeatureFlagTool,
         teamPersonas: selectedPersonas
       })
     } catch (error) {
@@ -170,6 +175,7 @@ export default function Project() {
       setSelectedDocTool("readme")
       setSelectedCICDTool("github-actions")
       setSelectedIssueTrackingTool("github-issues")
+      setSelectedFeatureFlagTool("configcat")
       setSelectedPersonas(["developer", "product-owner"])
       setShowIaC(false)
     } catch (error) {
@@ -179,11 +185,11 @@ export default function Project() {
 
   // Auto-save when data changes
   useEffect(() => {
-    if (isReady && (projectName || selectedPlatform || selectedProjectType || selectedArchitecture || selectedCloudPlatform || selectedDepTool || selectedDocTool || selectedCICDTool)) {
+    if (isReady && (projectName || selectedPlatform || selectedProjectType || selectedArchitecture || selectedCloudPlatform || selectedDepTool || selectedDocTool || selectedCICDTool || selectedFeatureFlagTool)) {
       const timeoutId = setTimeout(saveData, 1000)
       return () => clearTimeout(timeoutId)
     }
-  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedCloudPlatform, selectedDepTool, selectedDocTool, selectedCICDTool, selectedIssueTrackingTool, selectedPersonas, isReady])
+  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedCloudPlatform, selectedDepTool, selectedDocTool, selectedCICDTool, selectedIssueTrackingTool, selectedFeatureFlagTool, selectedPersonas, isReady])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -620,6 +626,15 @@ export default function Project() {
           selectedPlatform={selectedPlatform}
           selectedCICDTool={selectedCICDTool}
           onCICDToolChange={setSelectedCICDTool}
+          onCopyToClipboard={copyToClipboard}
+        />
+
+        {/* Feature Flag Card - BUILD/TEST: Feature rollout and experimentation */}
+        <FeatureFlagCard
+          projectName={projectName}
+          selectedPlatform={selectedPlatform}
+          selectedFeatureFlagTool={selectedFeatureFlagTool}
+          onFeatureFlagToolChange={setSelectedFeatureFlagTool}
           onCopyToClipboard={copyToClipboard}
         />
 

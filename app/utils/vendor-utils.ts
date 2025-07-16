@@ -1,4 +1,4 @@
-import type { VendorDetails, Platform, DependencyTool, DocumentationTool, CICDTool, IssueTrackingTool } from "~/types/project";
+import type { VendorDetails, Platform, DependencyTool, DocumentationTool, CICDTool, IssueTrackingTool, FeatureFlagTool } from "~/types/project";
 
 export const getVendorDetails = (platformId: string): VendorDetails => {
   const details = {
@@ -824,3 +824,227 @@ function getIssueTrackingVendorDetails(tool: IssueTrackingTool): VendorDetails {
     references: "Check vendor documentation"
   }
 }
+
+export const generateFeatureFlagVendorComparison = (
+  projectName: string,
+  selectedFeatureFlagTool: string,
+  featureFlagTools: FeatureFlagTool[]
+): string => {
+  const tool = featureFlagTools.find(t => t.id === selectedFeatureFlagTool)
+  const repoName = projectName.trim() || "my-project"
+  const currentDate = new Date().toISOString().split('T')[0]
+  
+  if (!tool) return ""
+  
+  // Get detailed vendor information for the selected feature flag tool
+  const vendorDetails = getFeatureFlagVendorDetails(selectedFeatureFlagTool)
+  
+  // Generate single row entry with universal vendor evaluation criteria
+  const vendorRow = [
+    vendorDetails.vendorName,
+    vendorDetails.company,
+    vendorDetails.productService,
+    vendorDetails.pricingModel,
+    vendorDetails.contractTerms,
+    vendorDetails.supportSLA,
+    vendorDetails.compliance,
+    vendorDetails.dataResidency,
+    vendorDetails.businessStability,
+    vendorDetails.marketPosition,
+    vendorDetails.integrationCapability,
+    vendorDetails.scalability,
+    vendorDetails.securityCertifications,
+    vendorDetails.references,
+    repoName,
+    currentDate,
+    "Under Evaluation"
+  ].join('\t')
+  
+  return `${vendorRow}
+
+# Vendor Entry Details for ${tool.name}
+Project: ${repoName}
+Evaluation Date: ${currentDate}
+Status: Under evaluation
+Tool Type: Feature Flag Management
+
+# Instructions:
+1. Copy the tab-separated row above
+2. Paste into your vendor evaluation spreadsheet
+3. The row includes: Vendor Name, Company, Product/Service, Pricing Model, Contract Terms, Support SLA, Compliance, Data Residency, Business Stability, Market Position, Integration Capability, Scalability, Security Certifications, References, Project Name, Evaluation Date, Status
+
+# Tool Summary for ${tool.name}:
+- Platform: ${tool.platform}
+- Pricing: ${tool.pricing}
+- Best For: ${tool.bestFor}
+- Key Features: ${tool.features.join(', ')}`
+};
+
+export const getFeatureFlagVendorDetails = (toolId: string): VendorDetails => {
+  const vendorMappings: Record<string, VendorDetails> = {
+    "launchdarkly": {
+      vendorName: "LaunchDarkly",
+      company: "LaunchDarkly Inc.",
+      productService: "Feature Flag Management & Experimentation Platform",
+      pricingModel: "Subscription-based: Starter ($8.33/seat/month), Pro ($16.67/seat/month), Enterprise (custom)",
+      contractTerms: "Monthly/Annual subscriptions, Enterprise custom agreements, 14-day free trial",
+      supportSLA: "24/7 for Enterprise, Business hours for Pro, Email support for Starter",
+      compliance: "SOC 2 Type II, ISO 27001, GDPR, CCPA, HIPAA",
+      dataResidency: "United States, European Union, Canada",
+      businessStability: "High - Well-funded private company, Series D funding",
+      marketPosition: "Market leader in feature flag management",
+      integrationCapability: "Excellent - 50+ SDKs, REST API, webhooks, extensive integrations",
+      scalability: "Enterprise-grade - Billions of feature flag evaluations daily",
+      securityCertifications: "SOC 2 Type II, ISO 27001, penetration testing",
+      references: "IBM, Atlassian, CircleCI, Microsoft (case studies available)"
+    },
+    "split": {
+      vendorName: "Split",
+      company: "Split Software Inc.",
+      productService: "Feature Flag Platform with Impact Measurement",
+      pricingModel: "Freemium: Developer (free), Team ($20/seat/month), Business ($60/seat/month)",
+      contractTerms: "Monthly/Annual subscriptions, Custom enterprise terms, 30-day free trial",
+      supportSLA: "24/7 for Business, Business hours for Team, Community for Developer",
+      compliance: "SOC 2 Type II, GDPR, CCPA",
+      dataResidency: "United States, European Union",
+      businessStability: "Private company, Series B funding, growing customer base",
+      marketPosition: "Strong in feature experimentation and impact measurement",
+      integrationCapability: "Good - 20+ SDKs, REST API, integrations with analytics tools",
+      scalability: "Enterprise-ready - High-performance feature flag evaluation",
+      securityCertifications: "SOC 2 Type II, regular security assessments",
+      references: "Product teams, engineering organizations"
+    },
+    "flagsmith": {
+      vendorName: "Flagsmith",
+      company: "Flagsmith Ltd.",
+      productService: "Open Source Feature Flag & Remote Config Service",
+      pricingModel: "Freemium: Free (50k requests/month), Scale ($45/month), Enterprise (custom)",
+      contractTerms: "Monthly/Annual subscriptions, Open source license, Self-hosted options",
+      supportSLA: "Community support, Priority support for paid plans",
+      compliance: "GDPR, SOC 2 (in progress)",
+      dataResidency: "Global - Self-hosted deployment available",
+      businessStability: "Growing open-source company, VC-backed",
+      marketPosition: "Strong in open-source feature flag space",
+      integrationCapability: "Good - Multiple SDKs, REST API, self-hosted flexibility",
+      scalability: "Good - Scales with infrastructure, auto-scaling options",
+      securityCertifications: "Security-focused development, regular audits",
+      references: "Open source community, development teams"
+    },
+    "posthog": {
+      vendorName: "PostHog",
+      company: "PostHog Inc.",
+      productService: "All-in-one Product Analytics with Feature Flags",
+      pricingModel: "Usage-based: Free (1M events/month), Paid ($0.00031/event)",
+      contractTerms: "Monthly billing, Annual discounts, Enterprise agreements",
+      supportSLA: "Community support, Priority support for paid plans",
+      compliance: "SOC 2 Type II, GDPR, CCPA",
+      dataResidency: "United States, European Union, self-hosted options",
+      businessStability: "Well-funded startup, Series B, open-source backing",
+      marketPosition: "Strong in product analytics with integrated feature flags",
+      integrationCapability: "Excellent - Multiple SDKs, API, extensive integrations",
+      scalability: "High - Built for scale, efficient event processing",
+      securityCertifications: "SOC 2 Type II, security-first architecture",
+      references: "Product teams, startups, growth companies"
+    },
+    "unleash": {
+      vendorName: "Unleash",
+      company: "Unleash AS",
+      productService: "Open Source Feature Toggle Service",
+      pricingModel: "Open source free, Pro ($80/month), Enterprise (custom)",
+      contractTerms: "Open source license, Commercial subscriptions, Self-hosted options",
+      supportSLA: "Community support, Professional support for paid plans",
+      compliance: "GDPR, SOC 2 (in progress)",
+      dataResidency: "Global - Self-hosted deployment available",
+      businessStability: "Established open-source company, commercial backing",
+      marketPosition: "Strong in enterprise open-source feature management",
+      integrationCapability: "Good - Multiple SDKs, REST API, flexible architecture",
+      scalability: "Enterprise-grade - Designed for large-scale deployments",
+      securityCertifications: "Security-focused, regular security reviews",
+      references: "Enterprise customers, development teams"
+    },
+    "configcat": {
+      vendorName: "ConfigCat",
+      company: "ConfigCat Kft.",
+      productService: "Feature Flag Service with Quick Setup",
+      pricingModel: "Freemium: Free (1k users), Pro ($99/month), Enterprise (custom)",
+      contractTerms: "Monthly/Annual subscriptions, 10-day free trial",
+      supportSLA: "Email support, Priority support for paid plans",
+      compliance: "GDPR, SOC 2 (in progress)",
+      dataResidency: "United States, European Union",
+      businessStability: "Growing SaaS company, stable service",
+      marketPosition: "Focused on simplicity and ease of use",
+      integrationCapability: "Good - 10+ SDKs, REST API, webhooks",
+      scalability: "Good - Cloud-native, auto-scaling",
+      securityCertifications: "Security-focused development, regular assessments",
+      references: "Development teams, small to medium businesses"
+    },
+    "optimizely": {
+      vendorName: "Optimizely",
+      company: "Optimizely Inc.",
+      productService: "Digital Experience Optimization Platform",
+      pricingModel: "Enterprise pricing (contact for quote)",
+      contractTerms: "Annual enterprise agreements, Custom pricing",
+      supportSLA: "24/7 enterprise support, Dedicated customer success",
+      compliance: "SOC 2 Type II, ISO 27001, GDPR, CCPA, HIPAA",
+      dataResidency: "United States, European Union, global presence",
+      businessStability: "High - Established enterprise company, strong revenue",
+      marketPosition: "Market leader in digital experience optimization",
+      integrationCapability: "Excellent - Extensive SDKs, APIs, enterprise integrations",
+      scalability: "Enterprise-grade - Handles massive scale and traffic",
+      securityCertifications: "SOC 2 Type II, ISO 27001, regular security audits",
+      references: "Fortune 500 companies, enterprise customers"
+    },
+    "github-actions-flags": {
+      vendorName: "GitHub",
+      company: "Microsoft Corporation",
+      productService: "Environment Variables for Feature Flags",
+      pricingModel: "Included with GitHub Actions usage",
+      contractTerms: "GitHub Terms of Service, Actions usage-based billing",
+      supportSLA: "GitHub support tiers",
+      compliance: "SOC 2, ISO 27001, GDPR (via GitHub)",
+      dataResidency: "United States, European Union (via GitHub)",
+      businessStability: "High - Part of Microsoft ecosystem",
+      marketPosition: "Basic feature flag capability within GitHub",
+      integrationCapability: "Limited - GitHub Actions and environment variables",
+      scalability: "Good - Scales with GitHub Actions infrastructure",
+      securityCertifications: "SOC 2 Type II, ISO 27001 (via GitHub)",
+      references: "GitHub users, development teams"
+    },
+    "custom-implementation": {
+      vendorName: "Custom Implementation",
+      company: "Internal Development Team",
+      productService: "Custom Feature Flag System",
+      pricingModel: "Development and infrastructure costs",
+      contractTerms: "Internal project, no external contracts",
+      supportSLA: "Internal team support",
+      compliance: "Depends on implementation",
+      dataResidency: "Controlled by implementation",
+      businessStability: "Depends on internal resources",
+      marketPosition: "Custom solution",
+      integrationCapability: "Full control over integrations",
+      scalability: "Depends on implementation",
+      securityCertifications: "Depends on implementation",
+      references: "Internal use only"
+    }
+  }
+  
+  return vendorMappings[toolId] || {
+    vendorName: "Unknown Tool",
+    company: "Unknown",
+    productService: "Feature Flag Management",
+    pricingModel: "Unknown",
+    contractTerms: "Per terms of service",
+    supportSLA: "Standard support",
+    compliance: "Check vendor documentation",
+    dataResidency: "Check vendor documentation",
+    businessStability: "Check vendor documentation",
+    marketPosition: "Check vendor documentation",
+    integrationCapability: "Check vendor documentation",
+    scalability: "Check vendor documentation",
+    securityCertifications: "Check vendor documentation",
+    references: "Check vendor documentation"
+  }
+}
+
+// Remove this line - no longer needed
+// const featureFlagTools = []; // This will be imported properly when used
