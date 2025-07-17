@@ -12,7 +12,7 @@ import { DocumentationCard } from "~/components/cards/documentation-card"
 import { CICDCard } from "~/components/cards/cicd-card"
 import { IssueTrackingCard } from "~/components/cards/issue-tracking-card"
 import { CloudPlatformCard } from "~/components/cards/cloud-platform-card"
-import { CloudPlatformProductsCard } from "~/components/cards/cloud-platform-products-card"
+import { ArchitectureServicesCard } from "~/components/cards/architecture-services-card"
 import { FeatureFlagCard } from "~/components/cards/feature-flag-card"
 import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
@@ -659,17 +659,18 @@ export default function Project() {
           onCopyToClipboard={copyToClipboard}
         />
 
-        {/* Cloud Platform Products Card - Show products for platforms with multiple services */}
+        {/* Architecture Services Card - Show services and their mapped cloud products */}
         {(() => {
-          const hasProducts = hasMultipleProducts(selectedCloudPlatform);
+          const architecture = getArchitecture(selectedProjectType, selectedArchitecture);
           
-          return hasProducts && selectedArchitecture ? (
-            <CloudPlatformProductsCard
-              platformName={getCloudPlatformById(selectedCloudPlatform)?.name || ""}
-              platformEmoji={getCloudPlatformById(selectedCloudPlatform)?.emoji || "☁️"}
-              platformId={selectedCloudPlatform}
-              architecture={selectedArchitecture}
-              projectType={selectedProjectType}
+          return architecture && selectedCloudPlatform ? (
+            <ArchitectureServicesCard
+              architecture={architecture}
+              cloudPlatform={selectedCloudPlatform as 'aws' | 'azure' | 'gcp'}
+              onServiceSelectionChange={(selections) => {
+                // TODO: Store service selections if needed for project generation
+                console.log('Service selections:', selections);
+              }}
             />
           ) : null;
         })()}
