@@ -87,6 +87,19 @@ export interface IssueTrackingTool {
   complexityLevel: 'beginner' | 'intermediate' | 'advanced';
 }
 
+export interface CloudPlatformProduct {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  bestFor: string;
+  supportedArchitectures: string[];
+  category: 'compute' | 'database' | 'storage' | 'networking' | 'ai-ml' | 'analytics' | 'serverless' | 'container' | 'messaging' | 'security';
+  pricing: string;
+  features: string[];
+  url?: string;
+}
+
 export interface CloudPlatform {
   id: string;
   name: string;
@@ -102,6 +115,7 @@ export interface CloudPlatform {
   iacSupport: string[]; // Array of IaC tool IDs
   regions: string[];
   complianceCertifications: string[];
+  products?: CloudPlatformProduct[]; // Optional products for platforms with multiple services
 }
 
 export interface FeatureFlagTool {

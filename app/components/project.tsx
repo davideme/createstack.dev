@@ -12,6 +12,7 @@ import { DocumentationCard } from "~/components/cards/documentation-card"
 import { CICDCard } from "~/components/cards/cicd-card"
 import { IssueTrackingCard } from "~/components/cards/issue-tracking-card"
 import { CloudPlatformCard } from "~/components/cards/cloud-platform-card"
+import { CloudPlatformProductsCard } from "~/components/cards/cloud-platform-products-card"
 import { FeatureFlagCard } from "~/components/cards/feature-flag-card"
 import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
@@ -21,6 +22,7 @@ import { useDB, useCurrentProject } from "~/lib/db"
 import { platforms } from "~/data/platforms"
 import { projectTypes, getArchitecturesForProjectType, getArchitecture } from "~/data/project-types"
 import { teamPersonas } from "~/data/personas"
+import { getCloudPlatformProducts, hasMultipleProducts, getCloudPlatformById } from "~/data/cloud-platforms"
 
 // Utility imports
 import { generateADR, generateArchitectureADR } from "~/utils/adr-generators"
@@ -656,6 +658,24 @@ export default function Project() {
           onCloudPlatformChange={setSelectedCloudPlatform}
           onCopyToClipboard={copyToClipboard}
         />
+
+        {/* Cloud Platform Products Card - Show products for platforms with multiple services */}
+        {(() => {
+          const hasProducts = hasMultipleProducts(selectedCloudPlatform);
+          const products = hasProducts && selectedArchitecture ? 
+            getCloudPlatformProducts(selectedCloudPlatform, selectedArchitecture) : {};
+          const hasRelevantProducts = Object.keys(products).length > 0;
+          
+          return hasProducts && selectedArchitecture && hasRelevantProducts ? (
+            <CloudPlatformProductsCard
+              platformName={getCloudPlatformById(selectedCloudPlatform)?.name || ""}
+              platformEmoji={getCloudPlatformById(selectedCloudPlatform)?.emoji || "☁️"}
+              products={products}
+              architecture={selectedArchitecture}
+              projectType={selectedProjectType}
+            />
+          ) : null;
+        })()}
       </div>
     </AppLayout>
   )

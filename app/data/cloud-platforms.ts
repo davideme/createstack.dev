@@ -1,4 +1,4 @@
-import type { CloudPlatform } from "~/types/project";
+import type { CloudPlatform, CloudPlatformProduct } from "~/types/project";
 
 export const cloudPlatforms: CloudPlatform[] = [
   {
@@ -15,7 +15,81 @@ export const cloudPlatforms: CloudPlatform[] = [
     supportedArchitectures: ["client-server", "microservices", "serverless-web", "serverless-backend", "event-driven", "container-orchestration", "hybrid-cloud", "batch-etl", "streaming-realtime", "olap-focused"],
     iacSupport: ["terraform", "pulumi", "cdk", "cloudformation"],
     regions: ["us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1", "ap-northeast-1", "ca-central-1", "eu-central-1", "ap-south-1"],
-    complianceCertifications: ["SOC 1/2/3", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "FedRAMP"]
+    complianceCertifications: ["SOC 1/2/3", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "FedRAMP"],
+    products: [
+      {
+        id: "ec2",
+        name: "EC2 (Elastic Compute Cloud)",
+        emoji: "🖥️",
+        description: "Scalable virtual servers in the cloud with various instance types and operating systems.",
+        bestFor: "Web applications, development environments, high-performance computing",
+        supportedArchitectures: ["client-server", "microservices", "monolith", "hybrid-cloud"],
+        category: "compute",
+        pricing: "On-demand, Reserved, Spot instances",
+        features: ["Auto Scaling", "Load Balancing", "Multiple instance types", "Custom AMIs", "Security Groups"],
+        url: "https://aws.amazon.com/ec2/"
+      },
+      {
+        id: "lambda",
+        name: "Lambda",
+        emoji: "⚡",
+        description: "Serverless compute service that runs code without provisioning servers.",
+        bestFor: "Event-driven applications, microservices, real-time data processing",
+        supportedArchitectures: ["serverless-web", "serverless-backend", "event-driven", "microservices"],
+        category: "serverless",
+        pricing: "Pay per request and compute time",
+        features: ["Event triggers", "Auto scaling", "Built-in monitoring", "Multiple runtimes", "VPC support"],
+        url: "https://aws.amazon.com/lambda/"
+      },
+      {
+        id: "rds",
+        name: "RDS (Relational Database Service)",
+        emoji: "🗃️",
+        description: "Managed relational database service supporting multiple database engines.",
+        bestFor: "Web applications, enterprise applications, data warehousing",
+        supportedArchitectures: ["client-server", "microservices", "monolith", "hybrid-cloud"],
+        category: "database",
+        pricing: "On-demand and Reserved instances",
+        features: ["Multi-AZ deployments", "Automated backups", "Read replicas", "Multiple engines", "Performance monitoring"],
+        url: "https://aws.amazon.com/rds/"
+      },
+      {
+        id: "s3",
+        name: "S3 (Simple Storage Service)",
+        emoji: "📦",
+        description: "Object storage service with industry-leading scalability and data availability.",
+        bestFor: "Static websites, data archiving, content distribution, backup",
+        supportedArchitectures: ["jamstack", "client-server", "microservices", "serverless-web", "batch-etl"],
+        category: "storage",
+        pricing: "Pay for storage used and requests",
+        features: ["99.999999999% durability", "Lifecycle policies", "Versioning", "Cross-region replication", "Static website hosting"],
+        url: "https://aws.amazon.com/s3/"
+      },
+      {
+        id: "ecs",
+        name: "ECS (Elastic Container Service)",
+        emoji: "🐳",
+        description: "Fully managed container orchestration service for Docker containers.",
+        bestFor: "Containerized applications, microservices, CI/CD pipelines",
+        supportedArchitectures: ["microservices", "container-orchestration", "client-server"],
+        category: "container",
+        pricing: "Pay for underlying EC2 instances or Fargate tasks",
+        features: ["Service discovery", "Load balancing", "Auto scaling", "Security", "Monitoring"],
+        url: "https://aws.amazon.com/ecs/"
+      },
+      {
+        id: "api-gateway",
+        name: "API Gateway",
+        emoji: "🚪",
+        description: "Fully managed service for creating, publishing, and managing APIs.",
+        bestFor: "REST APIs, WebSocket APIs, serverless applications",
+        supportedArchitectures: ["serverless-backend", "microservices", "event-driven"],
+        category: "networking",
+        pricing: "Pay per API call and data transfer",
+        features: ["Request/response transformation", "Authentication", "Rate limiting", "Monitoring", "Caching"],
+        url: "https://aws.amazon.com/api-gateway/"
+      }
+    ]
   },
   {
     id: "azure",
@@ -31,7 +105,69 @@ export const cloudPlatforms: CloudPlatform[] = [
     supportedArchitectures: ["client-server", "microservices", "serverless-web", "serverless-backend", "event-driven", "container-orchestration", "hybrid-cloud", "batch-etl", "streaming-realtime"],
     iacSupport: ["terraform", "pulumi", "cdk"],
     regions: ["East US", "West US 2", "West Europe", "Southeast Asia", "Japan East", "Australia East", "Canada Central", "UK South"],
-    complianceCertifications: ["SOC 1/2/3", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "FedRAMP"]
+    complianceCertifications: ["SOC 1/2/3", "ISO 27001", "HIPAA", "PCI DSS", "GDPR", "FedRAMP"],
+    products: [
+      {
+        id: "app-service",
+        name: "App Service",
+        emoji: "🌐",
+        description: "Fully managed platform for building, deploying, and scaling web apps.",
+        bestFor: "Web applications, REST APIs, mobile backends",
+        supportedArchitectures: ["client-server", "serverless-web", "microservices"],
+        category: "compute",
+        pricing: "Based on App Service plan tier",
+        features: ["Auto scaling", "DevOps integration", "Custom domains", "SSL certificates", "Deployment slots"],
+        url: "https://azure.microsoft.com/en-us/services/app-service/"
+      },
+      {
+        id: "functions",
+        name: "Azure Functions",
+        emoji: "⚡",
+        description: "Serverless compute service for event-driven applications.",
+        bestFor: "Event processing, scheduled tasks, microservices",
+        supportedArchitectures: ["serverless-backend", "event-driven", "microservices"],
+        category: "serverless",
+        pricing: "Consumption plan or Premium plan",
+        features: ["Multiple triggers", "Durable Functions", "Language flexibility", "Integrated security", "Monitoring"],
+        url: "https://azure.microsoft.com/en-us/services/functions/"
+      },
+      {
+        id: "sql-database",
+        name: "SQL Database",
+        emoji: "🗃️",
+        description: "Fully managed SQL database service with built-in intelligence.",
+        bestFor: "Modern applications, data warehousing, analytics",
+        supportedArchitectures: ["client-server", "microservices", "hybrid-cloud"],
+        category: "database",
+        pricing: "DTU or vCore-based models",
+        features: ["Auto-tuning", "Threat detection", "Geo-replication", "Elastic pools", "Backup retention"],
+        url: "https://azure.microsoft.com/en-us/services/sql-database/"
+      },
+      {
+        id: "storage",
+        name: "Azure Storage",
+        emoji: "📦",
+        description: "Massively scalable cloud storage for any type of data.",
+        bestFor: "File storage, blob storage, static websites, backup",
+        supportedArchitectures: ["jamstack", "client-server", "microservices", "batch-etl"],
+        category: "storage",
+        pricing: "Pay for storage used and operations",
+        features: ["Multiple storage types", "Geo-redundancy", "Lifecycle management", "Static website hosting", "CDN integration"],
+        url: "https://azure.microsoft.com/en-us/services/storage/"
+      },
+      {
+        id: "aks",
+        name: "AKS (Azure Kubernetes Service)",
+        emoji: "🐳",
+        description: "Managed Kubernetes service for containerized applications.",
+        bestFor: "Containerized applications, microservices, CI/CD",
+        supportedArchitectures: ["microservices", "container-orchestration"],
+        category: "container",
+        pricing: "Pay for worker nodes, control plane is free",
+        features: ["Integrated monitoring", "Azure AD integration", "Auto scaling", "Virtual nodes", "Dev Spaces"],
+        url: "https://azure.microsoft.com/en-us/services/kubernetes-service/"
+      }
+    ]
   },
   {
     id: "gcp",
@@ -47,7 +183,81 @@ export const cloudPlatforms: CloudPlatform[] = [
     supportedArchitectures: ["client-server", "microservices", "serverless-web", "serverless-backend", "event-driven", "container-orchestration", "batch-etl", "streaming-realtime", "olap-focused"],
     iacSupport: ["terraform", "pulumi"],
     regions: ["us-central1", "us-east1", "europe-west1", "asia-southeast1", "asia-northeast1", "australia-southeast1", "northamerica-northeast1", "europe-north1"],
-    complianceCertifications: ["SOC 1/2/3", "ISO 27001", "HIPAA", "PCI DSS", "GDPR"]
+    complianceCertifications: ["SOC 1/2/3", "ISO 27001", "HIPAA", "PCI DSS", "GDPR"],
+    products: [
+      {
+        id: "compute-engine",
+        name: "Compute Engine",
+        emoji: "🖥️",
+        description: "Scalable virtual machines running in Google's data centers.",
+        bestFor: "General-purpose computing, high-performance workloads",
+        supportedArchitectures: ["client-server", "microservices", "monolith", "hybrid-cloud"],
+        category: "compute",
+        pricing: "Sustained use discounts, preemptible instances",
+        features: ["Custom machine types", "Live migration", "Per-second billing", "Committed use discounts", "GPU support"],
+        url: "https://cloud.google.com/compute"
+      },
+      {
+        id: "cloud-functions",
+        name: "Cloud Functions",
+        emoji: "⚡",
+        description: "Serverless execution environment for building and connecting cloud services.",
+        bestFor: "Event-driven applications, microservices, data processing",
+        supportedArchitectures: ["serverless-backend", "event-driven", "microservices"],
+        category: "serverless",
+        pricing: "Pay per invocation and compute time",
+        features: ["Event triggers", "Automatic scaling", "Source-based deployment", "Environment variables", "VPC connectivity"],
+        url: "https://cloud.google.com/functions"
+      },
+      {
+        id: "cloud-sql",
+        name: "Cloud SQL",
+        emoji: "🗃️",
+        description: "Fully managed relational database service for MySQL, PostgreSQL, and SQL Server.",
+        bestFor: "Web applications, business applications, analytics",
+        supportedArchitectures: ["client-server", "microservices", "hybrid-cloud"],
+        category: "database",
+        pricing: "Per hour for instances and storage",
+        features: ["Automatic backups", "High availability", "Read replicas", "Point-in-time recovery", "Private IP"],
+        url: "https://cloud.google.com/sql"
+      },
+      {
+        id: "cloud-storage",
+        name: "Cloud Storage",
+        emoji: "📦",
+        description: "Unified object storage for developers and enterprises.",
+        bestFor: "Content serving, data archiving, disaster recovery",
+        supportedArchitectures: ["jamstack", "client-server", "microservices", "batch-etl"],
+        category: "storage",
+        pricing: "Pay for storage and network usage",
+        features: ["Multiple storage classes", "Lifecycle management", "Object versioning", "Global edge caching", "Strong consistency"],
+        url: "https://cloud.google.com/storage"
+      },
+      {
+        id: "gke",
+        name: "GKE (Google Kubernetes Engine)",
+        emoji: "🐳",
+        description: "Managed Kubernetes service for containerized applications.",
+        bestFor: "Containerized applications, microservices, hybrid deployments",
+        supportedArchitectures: ["microservices", "container-orchestration"],
+        category: "container",
+        pricing: "Pay for worker nodes, management fee for standard clusters",
+        features: ["Autopilot mode", "Workload Identity", "Binary Authorization", "Multi-cluster management", "Istio integration"],
+        url: "https://cloud.google.com/kubernetes-engine"
+      },
+      {
+        id: "bigquery",
+        name: "BigQuery",
+        emoji: "📊",
+        description: "Serverless, highly scalable data warehouse for analytics and machine learning.",
+        bestFor: "Data analytics, business intelligence, machine learning",
+        supportedArchitectures: ["olap-focused", "batch-etl", "streaming-realtime"],
+        category: "analytics",
+        pricing: "Pay for queries and storage",
+        features: ["Standard SQL", "Real-time analytics", "Machine learning", "Data transfer", "Federated queries"],
+        url: "https://cloud.google.com/bigquery"
+      }
+    ]
   },
   {
     id: "vercel",
@@ -194,4 +404,36 @@ export function getAvailableCloudPlatforms(architecture: string, personas: strin
 
 export function getCloudPlatformById(id: string): CloudPlatform | undefined {
   return cloudPlatforms.find(platform => platform.id === id);
+}
+
+export function getCloudPlatformProducts(platformId: string, architecture?: string): Record<string, CloudPlatformProduct[]> {
+  const platform = getCloudPlatformById(platformId);
+  if (!platform?.products) {
+    return {};
+  }
+
+  let products = [...platform.products];
+
+  // Filter by architecture if specified
+  if (architecture) {
+    products = products.filter(product =>
+      product.supportedArchitectures.includes(architecture)
+    );
+  }
+
+  // Group products by category
+  const groupedProducts = products.reduce((acc, product) => {
+    if (!acc[product.category]) {
+      acc[product.category] = [];
+    }
+    acc[product.category].push(product);
+    return acc;
+  }, {} as Record<string, CloudPlatformProduct[]>);
+
+  return groupedProducts;
+}
+
+export function hasMultipleProducts(platformId: string): boolean {
+  const platform = getCloudPlatformById(platformId);
+  return !!(platform?.products && platform.products.length > 0);
 }

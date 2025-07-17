@@ -3,7 +3,7 @@ import { Button } from "~/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { Badge } from "~/components/ui/badge"
 import { ExternalLink } from "lucide-react"
-import { getAvailableCloudPlatforms, getCloudPlatformById } from "~/data/cloud-platforms"
+import { getAvailableCloudPlatforms, getCloudPlatformById, hasMultipleProducts, getCloudPlatformProducts } from "~/data/cloud-platforms"
 import { generateADR } from "~/utils/adr-generators"
 import { generateVendorComparison } from "~/utils/vendor-utils"
 
@@ -101,6 +101,27 @@ export function CloudPlatformCard({
                   This platform supports your selected architecture pattern and provides the necessary services.
                 </p>
               </div>
+            )}
+
+            {/* Available Services */}
+            {hasMultipleProducts(selectedCloudPlatform) && selectedArchitecture && (
+              (() => {
+                const products = getCloudPlatformProducts(selectedCloudPlatform, selectedArchitecture);
+                const productCount = Object.values(products).flat().length;
+                const categoryCount = Object.keys(products).length;
+                
+                return productCount > 0 ? (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <h4 className="text-sm font-medium mb-1">
+                      🛠️ Available Services
+                    </h4>
+                    <p className="text-xs text-amber-700">
+                      {productCount} recommended services across {categoryCount} categories are available for your architecture pattern. 
+                      See the dedicated services card below for detailed recommendations.
+                    </p>
+                  </div>
+                ) : null;
+              })()
             )}
 
             {/* Infrastructure as Code Support */}
