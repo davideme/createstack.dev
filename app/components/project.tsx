@@ -662,15 +662,12 @@ export default function Project() {
         {/* Cloud Platform Products Card - Show products for platforms with multiple services */}
         {(() => {
           const hasProducts = hasMultipleProducts(selectedCloudPlatform);
-          const products = hasProducts && selectedArchitecture ? 
-            getCloudPlatformProducts(selectedCloudPlatform, selectedArchitecture) : {};
-          const hasRelevantProducts = Object.keys(products).length > 0;
           
-          return hasProducts && selectedArchitecture && hasRelevantProducts ? (
+          return hasProducts && selectedArchitecture ? (
             <CloudPlatformProductsCard
               platformName={getCloudPlatformById(selectedCloudPlatform)?.name || ""}
               platformEmoji={getCloudPlatformById(selectedCloudPlatform)?.emoji || "☁️"}
-              products={products}
+              platformId={selectedCloudPlatform}
               architecture={selectedArchitecture}
               projectType={selectedProjectType}
             />

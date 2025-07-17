@@ -3,7 +3,7 @@ import { Button } from "~/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { Badge } from "~/components/ui/badge"
 import { ExternalLink } from "lucide-react"
-import { getAvailableCloudPlatforms, getCloudPlatformById, hasMultipleProducts, getCloudPlatformProducts } from "~/data/cloud-platforms"
+import { getAvailableCloudPlatforms, getCloudPlatformById, hasMultipleProducts, getCloudPlatformProductsBySubcategory } from "~/data/cloud-platforms"
 import { generateADR } from "~/utils/adr-generators"
 import { generateVendorComparison } from "~/utils/vendor-utils"
 
@@ -106,9 +106,9 @@ export function CloudPlatformCard({
             {/* Available Services */}
             {hasMultipleProducts(selectedCloudPlatform) && selectedArchitecture && (
               (() => {
-                const products = getCloudPlatformProducts(selectedCloudPlatform, selectedArchitecture);
-                const productCount = Object.values(products).flat().length;
-                const categoryCount = Object.keys(products).length;
+                const productsBySubcategory = getCloudPlatformProductsBySubcategory(selectedCloudPlatform, selectedArchitecture);
+                const productCount = Object.values(productsBySubcategory).flatMap(subcats => Object.values(subcats)).flat().length;
+                const categoryCount = Object.keys(productsBySubcategory).length;
                 
                 return productCount > 0 ? (
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">

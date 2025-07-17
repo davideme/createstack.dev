@@ -98,6 +98,8 @@ export interface CloudPlatformProduct {
   pricing: string;
   features: string[];
   url?: string;
+  popularityRank: number; // 1 = most popular, higher numbers = less popular
+  subcategory?: string; // For grouping similar services (e.g., "virtual-machines", "containers")
 }
 
 export interface CloudPlatform {

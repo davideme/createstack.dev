@@ -27,7 +27,23 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "compute",
         pricing: "On-demand, Reserved, Spot instances",
         features: ["Auto Scaling", "Load Balancing", "Multiple instance types", "Custom AMIs", "Security Groups"],
-        url: "https://aws.amazon.com/ec2/"
+        url: "https://aws.amazon.com/ec2/",
+        popularityRank: 1,
+        subcategory: "virtual-machines"
+      },
+      {
+        id: "lightsail",
+        name: "Lightsail",
+        emoji: "💡",
+        description: "Easy-to-use cloud platform for simple web applications and websites.",
+        bestFor: "Simple web applications, blogs, small business websites",
+        supportedArchitectures: ["client-server", "monolith"],
+        category: "compute",
+        pricing: "Fixed monthly pricing starting at $3.50",
+        features: ["Pre-configured stacks", "Static IP", "DNS management", "Load balancers", "CDN"],
+        url: "https://aws.amazon.com/lightsail/",
+        popularityRank: 3,
+        subcategory: "virtual-machines"
       },
       {
         id: "lambda",
@@ -39,7 +55,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "serverless",
         pricing: "Pay per request and compute time",
         features: ["Event triggers", "Auto scaling", "Built-in monitoring", "Multiple runtimes", "VPC support"],
-        url: "https://aws.amazon.com/lambda/"
+        url: "https://aws.amazon.com/lambda/",
+        popularityRank: 1,
+        subcategory: "functions"
       },
       {
         id: "rds",
@@ -51,7 +69,23 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "database",
         pricing: "On-demand and Reserved instances",
         features: ["Multi-AZ deployments", "Automated backups", "Read replicas", "Multiple engines", "Performance monitoring"],
-        url: "https://aws.amazon.com/rds/"
+        url: "https://aws.amazon.com/rds/",
+        popularityRank: 1,
+        subcategory: "relational"
+      },
+      {
+        id: "dynamodb",
+        name: "DynamoDB",
+        emoji: "🚀",
+        description: "Fast and flexible NoSQL database service for any scale.",
+        bestFor: "High-performance applications, real-time applications, IoT, gaming",
+        supportedArchitectures: ["serverless-backend", "microservices", "event-driven"],
+        category: "database",
+        pricing: "Pay per request or provisioned capacity",
+        features: ["Single-digit millisecond latency", "Global tables", "Auto scaling", "ACID transactions", "Point-in-time recovery"],
+        url: "https://aws.amazon.com/dynamodb/",
+        popularityRank: 2,
+        subcategory: "nosql"
       },
       {
         id: "s3",
@@ -63,7 +97,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "storage",
         pricing: "Pay for storage used and requests",
         features: ["99.999999999% durability", "Lifecycle policies", "Versioning", "Cross-region replication", "Static website hosting"],
-        url: "https://aws.amazon.com/s3/"
+        url: "https://aws.amazon.com/s3/",
+        popularityRank: 1,
+        subcategory: "object-storage"
       },
       {
         id: "ecs",
@@ -75,7 +111,23 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "container",
         pricing: "Pay for underlying EC2 instances or Fargate tasks",
         features: ["Service discovery", "Load balancing", "Auto scaling", "Security", "Monitoring"],
-        url: "https://aws.amazon.com/ecs/"
+        url: "https://aws.amazon.com/ecs/",
+        popularityRank: 1,
+        subcategory: "orchestration"
+      },
+      {
+        id: "eks",
+        name: "EKS (Elastic Kubernetes Service)",
+        emoji: "☸️",
+        description: "Managed Kubernetes service for running Kubernetes applications.",
+        bestFor: "Kubernetes workloads, cloud-native applications, hybrid deployments",
+        supportedArchitectures: ["microservices", "container-orchestration"],
+        category: "container",
+        pricing: "Pay for control plane and worker nodes",
+        features: ["Managed control plane", "Auto scaling", "Security patching", "Networking", "Add-ons"],
+        url: "https://aws.amazon.com/eks/",
+        popularityRank: 2,
+        subcategory: "orchestration"
       },
       {
         id: "api-gateway",
@@ -87,7 +139,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "networking",
         pricing: "Pay per API call and data transfer",
         features: ["Request/response transformation", "Authentication", "Rate limiting", "Monitoring", "Caching"],
-        url: "https://aws.amazon.com/api-gateway/"
+        url: "https://aws.amazon.com/api-gateway/",
+        popularityRank: 1,
+        subcategory: "api-management"
       }
     ]
   },
@@ -117,7 +171,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "compute",
         pricing: "Based on App Service plan tier",
         features: ["Auto scaling", "DevOps integration", "Custom domains", "SSL certificates", "Deployment slots"],
-        url: "https://azure.microsoft.com/en-us/services/app-service/"
+        url: "https://azure.microsoft.com/en-us/services/app-service/",
+        popularityRank: 1,
+        subcategory: "web-apps"
       },
       {
         id: "functions",
@@ -129,7 +185,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "serverless",
         pricing: "Consumption plan or Premium plan",
         features: ["Multiple triggers", "Durable Functions", "Language flexibility", "Integrated security", "Monitoring"],
-        url: "https://azure.microsoft.com/en-us/services/functions/"
+        url: "https://azure.microsoft.com/en-us/services/functions/",
+        popularityRank: 1,
+        subcategory: "functions"
       },
       {
         id: "sql-database",
@@ -141,7 +199,23 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "database",
         pricing: "DTU or vCore-based models",
         features: ["Auto-tuning", "Threat detection", "Geo-replication", "Elastic pools", "Backup retention"],
-        url: "https://azure.microsoft.com/en-us/services/sql-database/"
+        url: "https://azure.microsoft.com/en-us/services/sql-database/",
+        popularityRank: 1,
+        subcategory: "relational"
+      },
+      {
+        id: "cosmos-db",
+        name: "Cosmos DB",
+        emoji: "🌌",
+        description: "Globally distributed, multi-model database service for any scale.",
+        bestFor: "Global applications, IoT, real-time personalization",
+        supportedArchitectures: ["microservices", "event-driven", "serverless-backend"],
+        category: "database",
+        pricing: "Pay for throughput and storage",
+        features: ["Global distribution", "Multi-model", "SLA guarantees", "Auto scaling", "Multiple APIs"],
+        url: "https://azure.microsoft.com/en-us/services/cosmos-db/",
+        popularityRank: 2,
+        subcategory: "nosql"
       },
       {
         id: "storage",
@@ -153,7 +227,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "storage",
         pricing: "Pay for storage used and operations",
         features: ["Multiple storage types", "Geo-redundancy", "Lifecycle management", "Static website hosting", "CDN integration"],
-        url: "https://azure.microsoft.com/en-us/services/storage/"
+        url: "https://azure.microsoft.com/en-us/services/storage/",
+        popularityRank: 1,
+        subcategory: "object-storage"
       },
       {
         id: "aks",
@@ -165,7 +241,23 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "container",
         pricing: "Pay for worker nodes, control plane is free",
         features: ["Integrated monitoring", "Azure AD integration", "Auto scaling", "Virtual nodes", "Dev Spaces"],
-        url: "https://azure.microsoft.com/en-us/services/kubernetes-service/"
+        url: "https://azure.microsoft.com/en-us/services/kubernetes-service/",
+        popularityRank: 1,
+        subcategory: "orchestration"
+      },
+      {
+        id: "container-instances",
+        name: "Container Instances",
+        emoji: "📦",
+        description: "Run containers without managing servers or orchestrators.",
+        bestFor: "Simple containerized workloads, batch jobs, CI/CD",
+        supportedArchitectures: ["container-orchestration", "batch-etl"],
+        category: "container",
+        pricing: "Pay per second for CPU and memory",
+        features: ["Fast startup", "Public IP connectivity", "Custom sizes", "Persistent storage", "Virtual network deployment"],
+        url: "https://azure.microsoft.com/en-us/services/container-instances/",
+        popularityRank: 2,
+        subcategory: "containers"
       }
     ]
   },
@@ -195,7 +287,23 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "compute",
         pricing: "Sustained use discounts, preemptible instances",
         features: ["Custom machine types", "Live migration", "Per-second billing", "Committed use discounts", "GPU support"],
-        url: "https://cloud.google.com/compute"
+        url: "https://cloud.google.com/compute",
+        popularityRank: 1,
+        subcategory: "virtual-machines"
+      },
+      {
+        id: "cloud-run",
+        name: "Cloud Run",
+        emoji: "🏃",
+        description: "Fully managed serverless platform for containerized applications.",
+        bestFor: "Containerized web services, APIs, microservices",
+        supportedArchitectures: ["serverless-web", "microservices", "container-orchestration"],
+        category: "compute",
+        pricing: "Pay for requests and compute time",
+        features: ["Automatic scaling", "Built-in load balancing", "Custom domains", "Traffic splitting", "Integrated CI/CD"],
+        url: "https://cloud.google.com/run",
+        popularityRank: 2,
+        subcategory: "serverless-containers"
       },
       {
         id: "cloud-functions",
@@ -207,7 +315,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "serverless",
         pricing: "Pay per invocation and compute time",
         features: ["Event triggers", "Automatic scaling", "Source-based deployment", "Environment variables", "VPC connectivity"],
-        url: "https://cloud.google.com/functions"
+        url: "https://cloud.google.com/functions",
+        popularityRank: 1,
+        subcategory: "functions"
       },
       {
         id: "cloud-sql",
@@ -219,7 +329,23 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "database",
         pricing: "Per hour for instances and storage",
         features: ["Automatic backups", "High availability", "Read replicas", "Point-in-time recovery", "Private IP"],
-        url: "https://cloud.google.com/sql"
+        url: "https://cloud.google.com/sql",
+        popularityRank: 1,
+        subcategory: "relational"
+      },
+      {
+        id: "firestore",
+        name: "Firestore",
+        emoji: "🔥",
+        description: "Flexible, scalable NoSQL cloud database for mobile, web, and server development.",
+        bestFor: "Real-time applications, mobile apps, web apps",
+        supportedArchitectures: ["serverless-backend", "microservices", "event-driven"],
+        category: "database",
+        pricing: "Pay for reads, writes, and storage",
+        features: ["Real-time updates", "Offline support", "Multi-region", "ACID transactions", "Security rules"],
+        url: "https://cloud.google.com/firestore",
+        popularityRank: 2,
+        subcategory: "nosql"
       },
       {
         id: "cloud-storage",
@@ -231,7 +357,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "storage",
         pricing: "Pay for storage and network usage",
         features: ["Multiple storage classes", "Lifecycle management", "Object versioning", "Global edge caching", "Strong consistency"],
-        url: "https://cloud.google.com/storage"
+        url: "https://cloud.google.com/storage",
+        popularityRank: 1,
+        subcategory: "object-storage"
       },
       {
         id: "gke",
@@ -243,7 +371,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "container",
         pricing: "Pay for worker nodes, management fee for standard clusters",
         features: ["Autopilot mode", "Workload Identity", "Binary Authorization", "Multi-cluster management", "Istio integration"],
-        url: "https://cloud.google.com/kubernetes-engine"
+        url: "https://cloud.google.com/kubernetes-engine",
+        popularityRank: 1,
+        subcategory: "orchestration"
       },
       {
         id: "bigquery",
@@ -255,7 +385,9 @@ export const cloudPlatforms: CloudPlatform[] = [
         category: "analytics",
         pricing: "Pay for queries and storage",
         features: ["Standard SQL", "Real-time analytics", "Machine learning", "Data transfer", "Federated queries"],
-        url: "https://cloud.google.com/bigquery"
+        url: "https://cloud.google.com/bigquery",
+        popularityRank: 1,
+        subcategory: "data-warehouse"
       }
     ]
   },
@@ -421,6 +553,9 @@ export function getCloudPlatformProducts(platformId: string, architecture?: stri
     );
   }
 
+  // Sort by popularity rank (lower number = more popular)
+  products.sort((a, b) => a.popularityRank - b.popularityRank);
+
   // Group products by category
   const groupedProducts = products.reduce((acc, product) => {
     if (!acc[product.category]) {
@@ -429,6 +564,42 @@ export function getCloudPlatformProducts(platformId: string, architecture?: stri
     acc[product.category].push(product);
     return acc;
   }, {} as Record<string, CloudPlatformProduct[]>);
+
+  return groupedProducts;
+}
+
+export function getCloudPlatformProductsBySubcategory(platformId: string, architecture?: string): Record<string, Record<string, CloudPlatformProduct[]>> {
+  const platform = getCloudPlatformById(platformId);
+  if (!platform?.products) {
+    return {};
+  }
+
+  let products = [...platform.products];
+
+  // Filter by architecture if specified
+  if (architecture) {
+    products = products.filter(product =>
+      product.supportedArchitectures.includes(architecture)
+    );
+  }
+
+  // Sort by popularity rank (lower number = more popular)
+  products.sort((a, b) => a.popularityRank - b.popularityRank);
+
+  // Group products by category and then by subcategory
+  const groupedProducts = products.reduce((acc, product) => {
+    const category = product.category;
+    const subcategory = product.subcategory || 'other';
+    
+    if (!acc[category]) {
+      acc[category] = {};
+    }
+    if (!acc[category][subcategory]) {
+      acc[category][subcategory] = [];
+    }
+    acc[category][subcategory].push(product);
+    return acc;
+  }, {} as Record<string, Record<string, CloudPlatformProduct[]>>);
 
   return groupedProducts;
 }
