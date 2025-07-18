@@ -2,6 +2,8 @@
 
 A cross-functional platform that helps technology leaders communicate and justify technical decisions to product, finance, and compliance teams.
 
+> 📋 **[Product Vision Document](PRODUCT_VISION.md)** - Comprehensive product strategy, roadmap, and market analysis
+
 ## Business Value
 
 CreateStack bridges the gap between technical decisions and business outcomes by providing:
