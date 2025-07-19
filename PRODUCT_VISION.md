@@ -32,8 +32,8 @@ CreateStack is a comprehensive technology planning platform that helps organizat
 - **Project Planning**: Interactive project setup with technology stack recommendations
 - **Architecture Patterns**: Support for 10+ architecture patterns (monolith, microservices, serverless, etc.)
 - **Platform Integration**: 50+ supported tools across cloud platforms, CI/CD, documentation, and monitoring
-- **Automated Documentation**: AI-generated ADRs, architecture diagrams, and vendor comparisons
-- **Infrastructure as Code**: Ready-to-deploy templates in Terraform, CDK, and CloudFormation
+- **Stakeholder Documentation**: Multi-audience documentation generation (ADRs, cost analysis, compliance reports)
+- **Direct Action Links**: Pre-configured links to create accounts and set up recommended tools
 - **Team-Based Recommendations**: Persona-driven tool suggestions for different team roles
 
 #### Supported Categories
@@ -239,6 +239,24 @@ CreateStack is a comprehensive technology planning platform that helps organizat
 - **Community Engagement**: Open source contributions and feedback
 - **Continuous Validation**: Regular user research and feedback cycles
 - **Strategic Partnerships**: Integrations with key industry players
+
+## Feature Development
+
+### Feature Briefs
+Detailed feature specifications, technical requirements, and success metrics are documented in the dedicated **[Feature Briefs Document](FEATURE_BRIEFS.md)**.
+
+### Core Features Summary
+- **Technology Stack Builder** (High Priority): Interactive wizard for stack decisions
+- **Documentation Generation for Stakeholders** (High Priority): Multi-audience documentation (tech, finance, compliance)
+- **Direct Action Links** (Medium Priority): Pre-configured links to create accounts and set up tools
+- **Team Persona-Based Recommendations** (Medium Priority): Intelligent tool recommendations
+- **Multi-Language Support** (Low Priority): Internationalization for global reach
+
+### Development Approach
+- **User-Centric Design**: Features driven by real user needs and feedback
+- **Progressive Implementation**: High-priority features first, with iterative enhancement
+- **Validation-Driven**: Feature success measured through defined metrics and user feedback
+- **Quality Focus**: Comprehensive testing, accessibility, and performance standards
 
 ## Success Factors
 

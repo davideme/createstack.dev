@@ -2,7 +2,8 @@
 
 A cross-functional platform that helps technology leaders communicate and justify technical decisions to product, finance, and compliance teams.
 
-> 📋 **[Product Vision Document](PRODUCT_VISION.md)** - Comprehensive product strategy, roadmap, and market analysis
+> 📋 **[Product Vision Document](PRODUCT_VISION.md)** - Comprehensive product strategy, roadmap, and market analysis  
+> 🔧 **[Feature Briefs](FEATURE_BRIEFS.md)** - Detailed feature specifications, user stories, and technical requirements
 
 ## Business Value
 
