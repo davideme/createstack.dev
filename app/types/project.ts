@@ -16,6 +16,13 @@ export interface TeamPersona {
   commonTools: string[];
 }
 
+export interface Industry {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+}
+
 export interface DependencyTool {
   id: string;
   name: string;

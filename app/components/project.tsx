@@ -22,6 +22,7 @@ import { useDB, useCurrentProject } from "~/lib/db"
 import { platforms } from "~/data/platforms"
 import { projectTypes, getArchitecturesForProjectType, getArchitecture } from "~/data/project-types"
 import { teamPersonas } from "~/data/personas"
+import { industries } from "~/data/industries"
 import { getCloudPlatformProducts, hasMultipleProducts, getCloudPlatformById } from "~/data/cloud-platforms"
 
 // Utility imports
@@ -41,6 +42,7 @@ export default function Project() {
   const [selectedIssueTrackingTool, setSelectedIssueTrackingTool] = useState("github-issues")
   const [selectedFeatureFlagTool, setSelectedFeatureFlagTool] = useState("configcat")
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>(["developer", "product-owner"])
+  const [selectedIndustry, setSelectedIndustry] = useState("none")
   const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   
@@ -94,6 +96,7 @@ export default function Project() {
       setSelectedIssueTrackingTool(currentProject.issueTrackingTool || "github-issues")
       setSelectedFeatureFlagTool(currentProject.featureFlagTool || "configcat")
       setSelectedPersonas(currentProject.teamPersonas || ["developer", "product-owner"])
+      setSelectedIndustry(currentProject.industry || "none")
       // Reset loading flag after a short delay to allow state updates to complete
       setTimeout(() => {
         isLoadingFromDB.current = false
@@ -131,7 +134,8 @@ export default function Project() {
             cicdTool: selectedCICDTool,
             issueTrackingTool: selectedIssueTrackingTool,
             featureFlagTool: selectedFeatureFlagTool,
-            teamPersonas: selectedPersonas
+            teamPersonas: selectedPersonas,
+            industry: selectedIndustry
           })
 
           const url = platform.url === '#' ? '#' : platform.url + encodeURIComponent(projectName.trim())
@@ -161,7 +165,8 @@ export default function Project() {
         cicdTool: selectedCICDTool,
         issueTrackingTool: selectedIssueTrackingTool,
         featureFlagTool: selectedFeatureFlagTool,
-        teamPersonas: selectedPersonas
+        teamPersonas: selectedPersonas,
+        industry: selectedIndustry
       })
     } catch (error) {
       console.error('Failed to save data:', error)
@@ -187,6 +192,7 @@ export default function Project() {
       setSelectedIssueTrackingTool("github-issues")
       setSelectedFeatureFlagTool("configcat")
       setSelectedPersonas(["developer", "product-owner"])
+      setSelectedIndustry("none")
       setShowIaC(false)
     } catch (error) {
       console.error('Failed to clear data:', error)
@@ -199,7 +205,7 @@ export default function Project() {
       const timeoutId = setTimeout(saveData, 1000)
       return () => clearTimeout(timeoutId)
     }
-  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedCloudPlatform, selectedDepTool, selectedDocTool, selectedCICDTool, selectedIssueTrackingTool, selectedFeatureFlagTool, selectedPersonas, isReady])
+  }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedCloudPlatform, selectedDepTool, selectedDocTool, selectedCICDTool, selectedIssueTrackingTool, selectedFeatureFlagTool, selectedPersonas, selectedIndustry, isReady])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -327,6 +333,53 @@ export default function Project() {
               )}
             </div>
 
+            {/* Industry Selection */}
+            <div className="space-y-2">
+              <label htmlFor="industry-select" className="text-sm font-medium">
+                Industry (Optional)
+              </label>
+              <p className="text-xs text-muted-foreground">
+                Select your industry for domain-specific recommendations, or skip for general recommendations
+              </p>
+              <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                <SelectTrigger id="industry-select">
+                  <SelectValue placeholder="Select your industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((industry) => (
+                    <SelectItem key={industry.id} value={industry.id}>
+                      <div className="flex items-center space-x-2">
+                        <span>{industry.emoji}</span>
+                        <span>{industry.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedIndustry && (
+                <div className={`p-3 rounded-lg border ${
+                  selectedIndustry === "none" 
+                    ? "bg-gray-50 border-gray-200" 
+                    : "bg-amber-50 border-amber-200"
+                }`}>
+                  <p className={`text-xs ${
+                    selectedIndustry === "none" 
+                      ? "text-gray-700" 
+                      : "text-amber-700"
+                  }`}>
+                    <strong>Selected:</strong> {industries.find(i => i.id === selectedIndustry)?.name}
+                  </p>
+                  <p className={`text-xs mt-1 ${
+                    selectedIndustry === "none" 
+                      ? "text-gray-700" 
+                      : "text-amber-700"
+                  }`}>
+                    {industries.find(i => i.id === selectedIndustry)?.description}
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Project Status */}
             {projectName.trim() && selectedPersonas.length > 0 && (
               <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -334,8 +387,8 @@ export default function Project() {
                   ✅ Project Ready
                 </p>
                 <p className="text-xs text-green-700">
-                  <strong>{projectName}</strong> is configured for a team with {selectedPersonas.length} persona{selectedPersonas.length > 1 ? 's' : ''}. 
-                  Tool recommendations will be tailored to your team composition.
+                  <strong>{projectName}</strong> is configured for a team with {selectedPersonas.length} persona{selectedPersonas.length > 1 ? 's' : ''}{selectedIndustry && selectedIndustry !== "none" ? ` in the ${industries.find(i => i.id === selectedIndustry)?.name} industry` : ' with general recommendations'}. 
+                  Tool recommendations will be tailored to your team composition{selectedIndustry && selectedIndustry !== "none" ? ' and industry focus' : ''}.
                 </p>
               </div>
             )}

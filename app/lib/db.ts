@@ -16,6 +16,7 @@ export interface Project {
   issueTrackingTool?: string;
   featureFlagTool?: string;
   teamPersonas?: string[]; // Array of persona IDs
+  industry?: string; // Industry selection
   createdAt: Date;
   lastModified: Date;
   status: 'active' | 'archived' | 'draft';
@@ -194,6 +195,7 @@ class CreateStackDB {
     issueTrackingTool?: string;
     featureFlagTool?: string;
     teamPersonas?: string[];
+    industry?: string;
   }): Promise<Project> {
     const currentProject = await this.getCurrentProject();
     
@@ -386,6 +388,7 @@ export function useCurrentProject() {
     issueTrackingTool?: string;
     featureFlagTool?: string;
     teamPersonas?: string[];
+    industry?: string;
   }) => {
     const project = await db.saveCurrentProject(projectData);
     setCurrentProject(project);
