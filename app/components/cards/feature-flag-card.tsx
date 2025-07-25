@@ -34,7 +34,7 @@ export function FeatureFlagCard({
   const selectedTool = featureFlagTools.find(t => t.id === selectedFeatureFlagTool)
 
   return (
-    <Card>
+    <Card className="border-l-4 border-l-yellow-400">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <span className="text-xl">{selectedTool?.emoji}</span>

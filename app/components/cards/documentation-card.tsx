@@ -34,7 +34,7 @@ export function DocumentationCard({
   const selectedTool = documentationTools.find(t => t.id === selectedDocTool)
 
   return (
-    <Card>
+    <Card className="border-l-4 border-l-blue-400">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <span className="text-xl">{selectedTool?.emoji}</span>

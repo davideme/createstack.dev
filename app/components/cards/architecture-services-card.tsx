@@ -53,7 +53,7 @@ export function ArchitectureServicesCard({
   const optionalServices = architecture.services.filter(s => !s.required);
 
   return (
-    <Card>
+    <Card className="border-l-4 border-l-pink-400">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           🏗️ Architecture Services

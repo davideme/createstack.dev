@@ -97,7 +97,7 @@ export function CloudPlatformProductsCard({
   };
 
   return (
-    <Card className="border-l-4 border-l-blue-500">
+    <Card className="border-l-4 border-l-pink-400">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <span className="text-xl">{platformEmoji}</span>

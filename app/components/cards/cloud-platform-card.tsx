@@ -28,7 +28,7 @@ export function CloudPlatformCard({
   const selectedPlatform = getCloudPlatformById(selectedCloudPlatform)
 
   return (
-    <Card>
+    <Card className="border-l-4 border-l-purple-400">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <span className="text-xl">{selectedPlatform?.emoji || '☁️'}</span>

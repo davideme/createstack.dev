@@ -34,7 +34,7 @@ export function DependencyManagementCard({
   const selectedTool = dependencyTools.find(t => t.id === selectedDepTool)
 
   return (
-    <Card>
+    <Card className="border-l-4 border-l-green-400">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <span className="text-xl">{selectedTool?.emoji}</span>

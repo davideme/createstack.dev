@@ -34,7 +34,7 @@ export function CICDCard({
   const selectedTool = cicdTools.find(t => t.id === selectedCICDTool)
 
   return (
-    <Card>
+    <Card className="border-l-4 border-l-orange-400">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <span className="text-xl">{selectedTool?.emoji}</span>

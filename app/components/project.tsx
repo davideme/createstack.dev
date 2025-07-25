@@ -554,7 +554,7 @@ export default function Project() {
 
         {/* CODE PHASE - DevOps Lifecycle */}
         {/* Code Hosting Card - CODE: Version control and collaboration */}
-        <Card>
+        <Card className="border-l-4 border-l-green-400">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">{platforms.find(p => p.id === selectedPlatform)?.emoji}</span>
