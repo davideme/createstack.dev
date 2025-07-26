@@ -78,6 +78,36 @@ export function DocumentationCard({
           <p className="text-xs text-muted-foreground">
             <strong>Best for:</strong> {selectedTool?.bestFor}
           </p>
+          {/* MCP Integration Info */}
+          {(selectedDocTool === 'github-wiki' || selectedDocTool === 'readme' || selectedDocTool === 'gitlab-wiki' || selectedDocTool === 'notion') && (
+            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-xs text-blue-700 font-medium">
+                🤖 MCP Integration Available
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                {selectedDocTool === 'github-wiki' || selectedDocTool === 'readme' 
+                  ? 'Use the official GitHub MCP tool for automated documentation management and AI assistance. '
+                  : selectedDocTool === 'gitlab-wiki'
+                  ? 'Use the official GitLab MCP tool for automated documentation management and AI assistance. '
+                  : 'Use the official Notion MCP tool for AI-powered documentation and content management. '
+                }
+                <a 
+                  href={
+                    selectedDocTool === 'github-wiki' || selectedDocTool === 'readme'
+                      ? 'https://github.com/modelcontextprotocol/servers/tree/main/src/github'
+                      : selectedDocTool === 'gitlab-wiki'
+                      ? 'https://github.com/modelcontextprotocol/servers/tree/main/src/gitlab'
+                      : 'https://github.com/modelcontextprotocol/servers/tree/main/src/notion'
+                  } 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-blue-800"
+                >
+                  View MCP Tool →
+                </a>
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="flex flex-col sm:flex-row gap-2">

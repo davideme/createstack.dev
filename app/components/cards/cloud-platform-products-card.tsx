@@ -215,6 +215,26 @@ export function CloudPlatformProductsCard({
                       </div>
                     )}
                     
+                    {/* MCP Integration Info for AWS services */}
+                    {platformId === 'aws' && (
+                      <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-xs text-blue-700 font-medium">
+                          🤖 MCP Integration Available
+                        </p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          Use the official AWS SDK MCP tool for automated AWS service management and AI assistance. 
+                          <a 
+                            href="https://github.com/modelcontextprotocol/servers/tree/main/src/aws-kb" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="underline hover:text-blue-800 ml-1"
+                          >
+                            View MCP Tool →
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                    
                     {selectedProduct.supportedArchitectures.length > 0 && (
                       <div className="mt-2">
                         <p className="text-xs font-medium mb-1">Supported Architectures:</p>

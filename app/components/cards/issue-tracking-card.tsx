@@ -86,6 +86,31 @@ export function IssueTrackingCard({
               <strong>Target personas:</strong> {getPersonasByIds(selectedTool.targetPersonas).map(p => p.name).join(", ")}
             </p>
           )}
+          {/* MCP Integration Info */}
+          {(selectedIssueTrackingTool === 'github-issues' || selectedIssueTrackingTool === 'gitlab-issues') && (
+            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-xs text-blue-700 font-medium">
+                🤖 MCP Integration Available
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                {selectedIssueTrackingTool === 'github-issues' 
+                  ? 'Use the official GitHub MCP tool for automated issue management and AI assistance. '
+                  : 'Use the official GitLab MCP tool for automated issue management and AI assistance. '
+                }
+                <a 
+                  href={selectedIssueTrackingTool === 'github-issues' 
+                    ? 'https://github.com/modelcontextprotocol/servers/tree/main/src/github'
+                    : 'https://github.com/modelcontextprotocol/servers/tree/main/src/gitlab'
+                  } 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-blue-800"
+                >
+                  View MCP Tool →
+                </a>
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="flex flex-col sm:flex-row gap-2">

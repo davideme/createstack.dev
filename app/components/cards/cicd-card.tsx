@@ -78,6 +78,31 @@ export function CICDCard({
           <p className="text-xs text-muted-foreground">
             <strong>Best for:</strong> {selectedTool?.bestFor}
           </p>
+          {/* MCP Integration Info */}
+          {(selectedCICDTool === 'github-actions' || selectedCICDTool === 'gitlab-ci') && (
+            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-xs text-blue-700 font-medium">
+                🤖 MCP Integration Available
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                {selectedCICDTool === 'github-actions' 
+                  ? 'Use the official GitHub MCP tool for automated workflow management and AI assistance. '
+                  : 'Use the official GitLab MCP tool for automated CI/CD pipeline management and AI assistance. '
+                }
+                <a 
+                  href={selectedCICDTool === 'github-actions' 
+                    ? 'https://github.com/modelcontextprotocol/servers/tree/main/src/github'
+                    : 'https://github.com/modelcontextprotocol/servers/tree/main/src/gitlab'
+                  } 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-blue-800"
+                >
+                  View MCP Tool →
+                </a>
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="flex flex-col sm:flex-row gap-2">

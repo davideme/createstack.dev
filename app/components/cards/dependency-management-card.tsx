@@ -78,6 +78,31 @@ export function DependencyManagementCard({
           <p className="text-xs text-muted-foreground">
             <strong>Best for:</strong> {selectedTool?.bestFor}
           </p>
+          {/* MCP Integration Info */}
+          {(selectedDepTool === 'dependabot' || selectedDepTool === 'gitlab-deps') && (
+            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-xs text-blue-700 font-medium">
+                🤖 MCP Integration Available
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                {selectedDepTool === 'dependabot' 
+                  ? 'Use the official GitHub MCP tool for automated dependency management and security monitoring. '
+                  : 'Use the official GitLab MCP tool for automated dependency scanning and vulnerability management. '
+                }
+                <a 
+                  href={selectedDepTool === 'dependabot' 
+                    ? 'https://github.com/modelcontextprotocol/servers/tree/main/src/github'
+                    : 'https://github.com/modelcontextprotocol/servers/tree/main/src/gitlab'
+                  } 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-blue-800"
+                >
+                  View MCP Tool →
+                </a>
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="flex flex-col sm:flex-row gap-2">
