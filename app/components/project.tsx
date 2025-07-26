@@ -14,7 +14,7 @@ import { IssueTrackingCard } from "~/components/cards/issue-tracking-card"
 import { CloudPlatformCard } from "~/components/cards/cloud-platform-card"
 import { ArchitectureServicesCard } from "~/components/cards/architecture-services-card"
 import { FeatureFlagCard } from "~/components/cards/feature-flag-card"
-import { ExternalLink, ChevronDown, ChevronUp, Search, Plus } from "lucide-react"
+import { ExternalLink, ChevronDown, ChevronUp, Search, Plus, Lock, Unlock } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { useDB, useCurrentProject } from "~/lib/db"
 
@@ -34,6 +34,41 @@ function useOptionalAnalysisContext() {
   } catch {
     return null
   }
+}
+
+// Card completion toggle component
+interface CardCompletionToggleProps {
+  cardId: string;
+  isCompleted: boolean;
+  onToggle: (cardId: string) => void;
+}
+
+function CardCompletionToggle({ cardId, isCompleted, onToggle }: CardCompletionToggleProps) {
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => onToggle(cardId)}
+      className={`ml-auto flex items-center gap-1 text-xs ${
+        isCompleted 
+          ? 'text-green-600 hover:text-green-700' 
+          : 'text-gray-400 hover:text-gray-600'
+      }`}
+      title={isCompleted ? 'Click to unlock and edit' : 'Mark as complete'}
+    >
+      {isCompleted ? (
+        <>
+          <Lock className="h-3 w-3" />
+          Complete
+        </>
+      ) : (
+        <>
+          <Unlock className="h-3 w-3" />
+          Mark Complete
+        </>
+      )}
+    </Button>
+  )
 }
 
 // Utility imports
@@ -68,6 +103,28 @@ export default function Project({
   const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   
+  // Card completion tracking
+  const [completedCards, setCompletedCards] = useState<Record<string, boolean>>({
+    'project-setup': false,
+    'project-type': false,
+    'code-hosting': false,
+    'documentation': false,
+    'issue-tracking': false,
+    'dependency-management': false,
+    'cicd': false,
+    'feature-flags': false,
+    'cloud-platform': false,
+    'architecture-services': false
+  })
+
+  // Toggle card completion status
+  const toggleCardCompletion = (cardId: string) => {
+    setCompletedCards(prev => ({
+      ...prev,
+      [cardId]: !prev[cardId]
+    }))
+  }
+
   // Track if we're loading data from database to prevent auto-save loops
   const isLoadingFromDB = useRef(false)
   // Track if we're updating from context to prevent circular updates
@@ -351,11 +408,16 @@ export default function Project({
     >
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Project Setup Card */}
-        <Card>
+        <Card className={completedCards['project-setup'] ? 'bg-gray-50 border-green-200' : ''}>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">🚀</span>
-              <span>{analysisContext?.mode === 'gap-analysis' ? "Current Stack Setup" : "Project Setup"}</span>
+              <span>{currentMode === 'gap-analysis' ? "Current Stack Setup" : "Project Setup"}</span>
+              <CardCompletionToggle
+                cardId="project-setup"
+                isCompleted={completedCards['project-setup']}
+                onToggle={toggleCardCompletion}
+              />
             </CardTitle>
             <CardDescription>
               {analysisContext?.mode === 'gap-analysis' 
@@ -375,6 +437,7 @@ export default function Project({
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 className="w-full"
+                disabled={completedCards['project-setup']}
               />
             </div>
             
@@ -392,11 +455,14 @@ export default function Project({
                       key={persona.id}
                       variant={isSelected ? "default" : "outline"}
                       className={`cursor-pointer transition-colors ${
-                        isSelected 
-                          ? "bg-primary text-primary-foreground" 
-                          : "hover:bg-muted"
+                        completedCards['project-setup'] 
+                          ? "opacity-50 cursor-not-allowed" 
+                          : isSelected 
+                            ? "bg-primary text-primary-foreground" 
+                            : "hover:bg-muted"
                       }`}
                       onClick={() => {
+                        if (completedCards['project-setup']) return;
                         if (isSelected) {
                           setSelectedPersonas(selectedPersonas.filter(id => id !== persona.id));
                         } else {
@@ -432,7 +498,7 @@ export default function Project({
               <p className="text-xs text-muted-foreground">
                 Select your industry for domain-specific recommendations, or skip for general recommendations
               </p>
-              <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+              <Select value={selectedIndustry} onValueChange={setSelectedIndustry} disabled={completedCards['project-setup']}>
                 <SelectTrigger id="industry-select">
                   <SelectValue placeholder="Select your industry" />
                 </SelectTrigger>
