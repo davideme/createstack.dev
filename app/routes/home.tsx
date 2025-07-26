@@ -1,13 +1,13 @@
 import type { Route } from "./+types/home";
-import Project from "../components/project";
+import { SmartStackAnalyzer } from "../components/smart-stack-analyzer";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Technology Planning & Decisions - CreateStack" },
-    { name: "description", content: "Cross-functional platform for technology decisions. Communicate technical choices to product, finance, and compliance teams with clear business justification." },
+    { title: "Stack Analysis & Builder - CreateStack" },
+    { name: "description", content: "Analyze your existing technology stack for gaps or build a new stack from scratch with guided recommendations." },
   ];
 }
 
 export default function Home() {
-  return <Project />;
+  return <SmartStackAnalyzer />;
 }

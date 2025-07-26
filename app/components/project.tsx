@@ -14,7 +14,7 @@ import { IssueTrackingCard } from "~/components/cards/issue-tracking-card"
 import { CloudPlatformCard } from "~/components/cards/cloud-platform-card"
 import { ArchitectureServicesCard } from "~/components/cards/architecture-services-card"
 import { FeatureFlagCard } from "~/components/cards/feature-flag-card"
-import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
+import { ExternalLink, ChevronDown, ChevronUp, Search, Plus } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { useDB, useCurrentProject } from "~/lib/db"
 
@@ -25,12 +25,34 @@ import { teamPersonas } from "~/data/personas"
 import { industries } from "~/data/industries"
 import { getCloudPlatformProducts, hasMultipleProducts, getCloudPlatformById } from "~/data/cloud-platforms"
 
+// Try to use analysis context if available
+import { useAnalysisContext } from "./smart-stack-analyzer"
+
+function useOptionalAnalysisContext() {
+  try {
+    return useAnalysisContext()
+  } catch {
+    return null
+  }
+}
+
 // Utility imports
 import { generateADR, generateArchitectureADR } from "~/utils/adr-generators"
 import { generateVendorComparison } from "~/utils/vendor-utils"
 import { generateArchitectureDiagram } from "~/utils/architecture-diagrams"
 
-export default function Project() {
+export default function Project({ 
+  projectStateRef, 
+  mode, 
+  onModeChange 
+}: { 
+  projectStateRef?: React.MutableRefObject<any>;
+  mode?: 'gap-analysis' | 'stack-builder';
+  onModeChange?: (mode: 'gap-analysis' | 'stack-builder') => void;
+}) {
+  // Check if we're in analysis context
+  const analysisContext = useOptionalAnalysisContext()
+  
   const [projectName, setProjectName] = useState("")
   const [selectedPlatform, setSelectedPlatform] = useState("github")
   const [selectedProjectType, setSelectedProjectType] = useState("web-app")
@@ -48,6 +70,8 @@ export default function Project() {
   
   // Track if we're loading data from database to prevent auto-save loops
   const isLoadingFromDB = useRef(false)
+  // Track if we're updating from context to prevent circular updates
+  const isUpdatingFromContext = useRef(false)
   const { isReady, error } = useDB()
   const { currentProject, saveCurrentProject, clearCurrentProject } = useCurrentProject()
 
@@ -103,6 +127,40 @@ export default function Project() {
       }, 100)
     }
   }, [currentProject])
+
+  // Update external project state ref when provided (for gap analysis)
+  useEffect(() => {
+    if (projectStateRef && !isLoadingFromDB.current) {
+      projectStateRef.current = {
+        projectName,
+        selectedPlatform,
+        selectedProjectType,
+        selectedArchitecture,
+        selectedCloudPlatform,
+        selectedDepTool,
+        selectedDocTool,
+        selectedCICDTool,
+        selectedIssueTrackingTool,
+        selectedFeatureFlagTool,
+        selectedPersonas,
+        selectedIndustry
+      };
+    }
+  }, [
+    projectStateRef,
+    projectName,
+    selectedPlatform,
+    selectedProjectType,
+    selectedArchitecture,
+    selectedCloudPlatform,
+    selectedDepTool,
+    selectedDocTool,
+    selectedCICDTool,
+    selectedIssueTrackingTool,
+    selectedFeatureFlagTool,
+    selectedPersonas,
+    selectedIndustry
+  ])
 
   // Reset architecture selection when project type changes
   useEffect(() => {
@@ -213,6 +271,7 @@ export default function Project() {
     })
   }
 
+  // Create clear saved data action (fallback for when not in mode switching context)
   const clearSavedDataAction = (
     <div className="flex items-center space-x-3">
       <SavingIndicator isSaving={isSaving} />
@@ -226,7 +285,33 @@ export default function Project() {
         <span>New Project Plan</span>
       </Button>
     </div>
-  )
+  );
+
+  // Create header actions for mode switching
+  const headerActions = onModeChange ? (
+    <div className="flex gap-2">
+      <Button
+        variant={mode === 'gap-analysis' ? 'default' : 'outline'}
+        onClick={() => onModeChange('gap-analysis')}
+        className="flex items-center gap-2"
+        size="sm"
+      >
+        <Search className="h-4 w-4" />
+        Analyze Existing Stack
+      </Button>
+      <Button
+        variant={mode === 'stack-builder' ? 'default' : 'outline'}
+        onClick={() => onModeChange('stack-builder')}
+        className="flex items-center gap-2"
+        size="sm"
+      >
+        <Plus className="h-4 w-4" />
+        Build New Stack
+      </Button>
+    </div>
+  ) : clearSavedDataAction;
+
+  const currentMode = mode || analysisContext?.mode;
 
   if (error) {
     return (
@@ -257,9 +342,12 @@ export default function Project() {
 
   return (
     <AppLayout 
-      title="Technology Stack Planning" 
-      description="Build business-aligned technology choices with clear rationale for stakeholders across teams."
-      headerActions={clearSavedDataAction}
+      title={currentMode === 'gap-analysis' ? "Stack Gap Analysis" : "Technology Stack Planning"}
+      description={currentMode === 'gap-analysis' 
+        ? "Analyze your existing technology stack to identify gaps and get targeted recommendations."
+        : "Build business-aligned technology choices with clear rationale for stakeholders across teams."
+      }
+      headerActions={headerActions}
     >
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Project Setup Card */}
@@ -267,10 +355,13 @@ export default function Project() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">🚀</span>
-              <span>Project Setup</span>
+              <span>{analysisContext?.mode === 'gap-analysis' ? "Current Stack Setup" : "Project Setup"}</span>
             </CardTitle>
             <CardDescription>
-              Define your project name and team composition to get personalized tool recommendations
+              {analysisContext?.mode === 'gap-analysis' 
+                ? "Enter your existing technologies below to see what's missing from your stack"
+                : "Define your project name and team composition to get personalized tool recommendations"
+              }
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
