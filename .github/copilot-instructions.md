@@ -10,3 +10,10 @@
 - Prefer custom hooks for complex logic
 - Keep components focused on single responsibilities
 - Use proper TypeScript types for props and state
+
+### Software engineering principles:
+
+DRY (Don't Repeat Yourself)
+Single Responsibility Principle
+Composition over Inheritance
+Reusability & Maintainability
