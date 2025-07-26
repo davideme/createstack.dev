@@ -4,14 +4,10 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Progress } from "~/components/ui/progress";
 import { 
-  Search, 
-  Plus, 
   BarChart3, 
-  FileText, 
   CheckCircle, 
   AlertTriangle,
   Info,
-  ArrowRight,
   TrendingUp
 } from "lucide-react";
 
@@ -36,56 +32,6 @@ export function useAnalysisContext() {
     throw new Error('useAnalysisContext must be used within AnalysisProvider');
   }
   return context;
-}
-
-interface StackModeToggleProps {
-  mode: 'gap-analysis' | 'stack-builder';
-  onModeChange: (mode: 'gap-analysis' | 'stack-builder') => void;
-}
-
-function StackModeToggle({ mode, onModeChange }: StackModeToggleProps) {
-  return (
-    <Card className="mb-6">
-      <CardContent className="pt-6">
-        <div className="flex justify-center gap-4">
-          <Button
-            variant={mode === 'gap-analysis' ? 'default' : 'outline'}
-            onClick={() => onModeChange('gap-analysis')}
-            className="flex items-center gap-2"
-          >
-            <Search className="h-4 w-4" />
-            Analyze Existing Stack
-          </Button>
-          <Button
-            variant={mode === 'stack-builder' ? 'default' : 'outline'}
-            onClick={() => onModeChange('stack-builder')}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Build New Stack
-          </Button>
-        </div>
-        
-        <div className="mt-4 text-center">
-          {mode === 'gap-analysis' ? (
-            <div className="space-y-2">
-              <h3 className="font-semibold text-blue-600">Gap Analysis Mode</h3>
-              <p className="text-sm text-gray-600">
-                Fill in your existing technologies below to identify missing components
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <h3 className="font-semibold text-green-600">Stack Builder Mode</h3>
-              <p className="text-sm text-gray-600">
-                Build a comprehensive technology stack from scratch with guided recommendations
-              </p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
 }
 
 interface RealTimeGapAnalysisProps {
@@ -259,8 +205,6 @@ export function SmartStackAnalyzer() {
       getProjectState
     }}>
       <div className="space-y-6">
-        <StackModeToggle mode={mode} onModeChange={setMode} />
-        
         {mode === 'gap-analysis' && (
           <RealTimeGapAnalysis getProjectState={getProjectState} />
         )}
