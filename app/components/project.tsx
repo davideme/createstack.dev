@@ -553,11 +553,16 @@ export default function Project({
         </Card>
 
         {/* Project Type Card */}
-        <Card>
+        <Card className={completedCards['project-type'] ? 'bg-gray-50 border-green-200' : ''}>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">{projectTypes.find(p => p.id === selectedProjectType)?.emoji}</span>
               <span>Product Strategy & Architecture</span>
+              <CardCompletionToggle
+                cardId="project-type"
+                isCompleted={completedCards['project-type']}
+                onToggle={toggleCardCompletion}
+              />
             </CardTitle>
             <CardDescription>
               Align technical approach with business goals, budget constraints, and delivery timelines
@@ -568,7 +573,7 @@ export default function Project({
               <label htmlFor="project-type-select" className="text-sm font-medium">
                 Project Type
               </label>
-              <Select value={selectedProjectType} onValueChange={setSelectedProjectType}>
+              <Select value={selectedProjectType} onValueChange={setSelectedProjectType} disabled={completedCards['project-type']}>
                 <SelectTrigger id="project-type-select">
                   <SelectValue placeholder="Select a project type" />
                 </SelectTrigger>
@@ -608,7 +613,7 @@ export default function Project({
                 <label htmlFor="architecture-select" className="text-sm font-medium">
                   Architecture Pattern
                 </label>
-                <Select value={selectedArchitecture} onValueChange={setSelectedArchitecture}>
+                <Select value={selectedArchitecture} onValueChange={setSelectedArchitecture} disabled={completedCards['project-type']}>
                   <SelectTrigger id="architecture-select">
                     <SelectValue placeholder="Select an architecture pattern" />
                   </SelectTrigger>
@@ -697,6 +702,8 @@ export default function Project({
           selectedDocTool={selectedDocTool}
           onDocToolChange={setSelectedDocTool}
           onCopyToClipboard={copyToClipboard}
+          isCompleted={completedCards['documentation']}
+          onToggleCompletion={() => toggleCardCompletion('documentation')}
         />
 
         {/* Issue Tracking Card - PLAN: Project management and planning */}
@@ -707,15 +714,22 @@ export default function Project({
           selectedPersonas={selectedPersonas}
           onIssueTrackingToolChange={setSelectedIssueTrackingTool}
           onCopyToClipboard={copyToClipboard}
+          isCompleted={completedCards['issue-tracking']}
+          onToggleCompletion={() => toggleCardCompletion('issue-tracking')}
         />
 
         {/* CODE PHASE - DevOps Lifecycle */}
         {/* Code Hosting Card - CODE: Version control and collaboration */}
-        <Card className="border-l-4 border-l-green-400">
+        <Card className={`border-l-4 border-l-green-400 ${completedCards['code-hosting'] ? 'bg-gray-50 border-green-200' : ''}`}>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">{platforms.find(p => p.id === selectedPlatform)?.emoji}</span>
               <span>Code Hosting</span>
+              <CardCompletionToggle
+                cardId="code-hosting"
+                isCompleted={completedCards['code-hosting']}
+                onToggle={toggleCardCompletion}
+              />
             </CardTitle>
             <CardDescription>
               Choose development tools considering budget, compliance requirements, and team productivity
@@ -726,7 +740,7 @@ export default function Project({
               <label htmlFor="platform-select" className="text-sm font-medium">
                 Platform
               </label>
-              <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+              <Select value={selectedPlatform} onValueChange={setSelectedPlatform} disabled={completedCards['code-hosting']}>
                 <SelectTrigger id="platform-select">
                   <SelectValue placeholder="Select a platform" />
                 </SelectTrigger>
@@ -760,7 +774,7 @@ export default function Project({
             <div className="flex flex-col sm:flex-row gap-2">
               <Button 
                 className="flex items-center space-x-2"
-                disabled={!projectName.trim()}
+                disabled={!projectName.trim() || completedCards['code-hosting']}
                 onClick={handleCreateRepository}
               >
                 <span>{platforms.find(p => p.id === selectedPlatform)?.emoji}</span>
@@ -837,6 +851,8 @@ export default function Project({
           selectedDepTool={selectedDepTool}
           onDepToolChange={setSelectedDepTool}
           onCopyToClipboard={copyToClipboard}
+          isCompleted={completedCards['dependency-management']}
+          onToggleCompletion={() => toggleCardCompletion('dependency-management')}
         />
 
         {/* BUILD & TEST PHASE - DevOps Lifecycle */}
@@ -847,6 +863,8 @@ export default function Project({
           selectedCICDTool={selectedCICDTool}
           onCICDToolChange={setSelectedCICDTool}
           onCopyToClipboard={copyToClipboard}
+          isCompleted={completedCards['cicd']}
+          onToggleCompletion={() => toggleCardCompletion('cicd')}
         />
 
         {/* Feature Flag Card - BUILD/TEST: Feature rollout and experimentation */}
@@ -856,6 +874,8 @@ export default function Project({
           selectedFeatureFlagTool={selectedFeatureFlagTool}
           onFeatureFlagToolChange={setSelectedFeatureFlagTool}
           onCopyToClipboard={copyToClipboard}
+          isCompleted={completedCards['feature-flags']}
+          onToggleCompletion={() => toggleCardCompletion('feature-flags')}
         />
 
         {/* DEPLOY & OPERATE PHASE - DevOps Lifecycle */}
@@ -867,6 +887,8 @@ export default function Project({
           selectedPersonas={selectedPersonas}
           onCloudPlatformChange={setSelectedCloudPlatform}
           onCopyToClipboard={copyToClipboard}
+          isCompleted={completedCards['cloud-platform']}
+          onToggleCompletion={() => toggleCardCompletion('cloud-platform')}
         />
 
         {/* Architecture Services Card - Show services and their mapped cloud products */}
@@ -881,6 +903,8 @@ export default function Project({
                 // TODO: Store service selections if needed for project generation
                 console.log('Service selections:', selections);
               }}
+              isCompleted={completedCards['architecture-services']}
+              onToggleCompletion={() => toggleCardCompletion('architecture-services')}
             />
           ) : null;
         })()}

@@ -1,7 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { ExternalLink } from "lucide-react"
+import { CompletableCard } from "~/components/ui/completable-card"
+import { useCompletableInputs } from "~/hooks/use-completable-inputs"
 import { featureFlagTools, getAvailableFeatureFlagTools, getFeatureFlagToolDocumentationUrl, isFeatureFlagToolNativeToPlatform } from "~/data/feature-flag-tools"
 import { generateFeatureFlagADR } from "~/utils/adr-generators"
 import { generateFeatureFlagVendorComparison } from "~/utils/vendor-utils"
@@ -13,6 +14,8 @@ interface FeatureFlagCardProps {
   selectedFeatureFlagTool: string
   onFeatureFlagToolChange: (toolId: string) => void
   onCopyToClipboard: (text: string) => void
+  isCompleted?: boolean
+  onToggleCompletion?: () => void
 }
 
 export function FeatureFlagCard({
@@ -20,7 +23,9 @@ export function FeatureFlagCard({
   selectedPlatform,
   selectedFeatureFlagTool,
   onFeatureFlagToolChange,
-  onCopyToClipboard
+  onCopyToClipboard,
+  isCompleted = false,
+  onToggleCompletion
 }: FeatureFlagCardProps) {
   const handleConfigureFeatureFlagTool = () => {
     const url = getFeatureFlagToolDocumentationUrl(selectedFeatureFlagTool)
@@ -32,25 +37,26 @@ export function FeatureFlagCard({
   }
 
   const selectedTool = featureFlagTools.find(t => t.id === selectedFeatureFlagTool)
+  const { selectProps, buttonProps } = useCompletableInputs({ 
+    isCompleted, 
+    baseDisabled: !projectName.trim() 
+  })
 
   return (
-    <Card className="border-l-4 border-l-yellow-400">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span className="text-xl">{selectedTool?.emoji}</span>
-          <span>Feature Flags</span>
-        </CardTitle>
-        <CardDescription>
-          Manage feature rollouts, A/B testing, and experimentation
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <CompletableCard
+      title="Feature Flags"
+      description="Manage feature rollouts, A/B testing, and experimentation"
+      emoji={selectedTool?.emoji}
+      isCompleted={isCompleted}
+      onToggleCompletion={onToggleCompletion}
+      borderColorClass="border-l-yellow-400"
+    >
         <div className="space-y-2">
           <label htmlFor="feature-flag-tool-select" className="text-sm font-medium">
             Feature Flag Tool
           </label>
-          <Select value={selectedFeatureFlagTool} onValueChange={onFeatureFlagToolChange}>
-            <SelectTrigger id="feature-flag-tool-select">
+          <Select value={selectedFeatureFlagTool} onValueChange={onFeatureFlagToolChange} {...selectProps}>
+            <SelectTrigger id="feature-flag-tool-select" className={selectProps.className}>
               <SelectValue placeholder="Select a feature flag tool" />
             </SelectTrigger>
             <SelectContent>
@@ -86,7 +92,7 @@ export function FeatureFlagCard({
         <div className="flex flex-col sm:flex-row gap-2">
           <Button 
             className="flex items-center space-x-2"
-            disabled={!projectName.trim()}
+            {...buttonProps}
             onClick={handleConfigureFeatureFlagTool}
           >
             <span>{selectedTool?.emoji}</span>
@@ -103,6 +109,7 @@ export function FeatureFlagCard({
               <Button
                 size="sm"
                 variant="outline"
+                {...buttonProps}
                 onClick={() => onCopyToClipboard(generateFeatureFlagADR(projectName, selectedFeatureFlagTool, featureFlagTools))}
               >
                 Copy ADR
@@ -123,6 +130,7 @@ export function FeatureFlagCard({
                 <Button
                   size="sm"
                   variant="outline"
+                  {...buttonProps}
                   onClick={() => onCopyToClipboard(generateFeatureFlagVendorComparison(projectName, selectedFeatureFlagTool, featureFlagTools))}
                 >
                   Copy Vendor Row
@@ -142,7 +150,6 @@ export function FeatureFlagCard({
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+    </CompletableCard>
   )
 }

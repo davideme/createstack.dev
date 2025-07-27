@@ -1,7 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { ExternalLink } from "lucide-react"
+import { CompletableCard } from "~/components/ui/completable-card"
+import { useCompletableInputs } from "~/hooks/use-completable-inputs"
 import { issueTrackingTools, getAvailableIssueTrackingTools, getIssueTrackingToolDocumentationUrl, isIssueTrackingToolNativeToPlatform } from "~/data/issue-tracking-tools"
 import { generateIssueTrackingADR } from "~/utils/adr-generators"
 import { generateIssueTrackingVendorComparison } from "~/utils/vendor-utils"
@@ -15,6 +16,8 @@ interface IssueTrackingCardProps {
   selectedPersonas: string[]
   onIssueTrackingToolChange: (toolId: string) => void
   onCopyToClipboard: (text: string) => void
+  isCompleted?: boolean
+  onToggleCompletion?: () => void
 }
 
 export function IssueTrackingCard({
@@ -23,7 +26,9 @@ export function IssueTrackingCard({
   selectedIssueTrackingTool,
   selectedPersonas,
   onIssueTrackingToolChange,
-  onCopyToClipboard
+  onCopyToClipboard,
+  isCompleted = false,
+  onToggleCompletion
 }: IssueTrackingCardProps) {
   const handleConfigureIssueTrackingTool = () => {
     const url = getIssueTrackingToolDocumentationUrl(selectedIssueTrackingTool)
@@ -35,25 +40,26 @@ export function IssueTrackingCard({
   }
 
   const selectedTool = issueTrackingTools.find(t => t.id === selectedIssueTrackingTool)
+  const { selectProps, buttonProps } = useCompletableInputs({ 
+    isCompleted, 
+    baseDisabled: !projectName.trim() 
+  })
 
   return (
-    <Card className="border-l-4 border-l-blue-400">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span className="text-xl">{selectedTool?.emoji}</span>
-          <span>Issue & Project Tracking</span>
-        </CardTitle>
-        <CardDescription>
-          Track bugs, features, and project progress
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <CompletableCard
+      title="Issue & Project Tracking"
+      description="Track bugs, features, and project progress"
+      emoji={selectedTool?.emoji}
+      isCompleted={isCompleted}
+      onToggleCompletion={onToggleCompletion}
+      borderColorClass="border-l-blue-400"
+    >
         <div className="space-y-2">
           <label htmlFor="issue-tracking-tool-select" className="text-sm font-medium">
             Issue Tracking Tool
           </label>
-          <Select value={selectedIssueTrackingTool} onValueChange={onIssueTrackingToolChange}>
-            <SelectTrigger id="issue-tracking-tool-select">
+          <Select value={selectedIssueTrackingTool} onValueChange={onIssueTrackingToolChange} {...selectProps}>
+            <SelectTrigger id="issue-tracking-tool-select" className={selectProps.className}>
               <SelectValue placeholder="Select an issue tracking tool" />
             </SelectTrigger>
             <SelectContent>
@@ -116,7 +122,7 @@ export function IssueTrackingCard({
         <div className="flex flex-col sm:flex-row gap-2">
           <Button 
             className="flex items-center space-x-2"
-            disabled={!projectName.trim()}
+            {...buttonProps}
             onClick={handleConfigureIssueTrackingTool}
           >
             <span>{selectedTool?.emoji}</span>
@@ -133,6 +139,7 @@ export function IssueTrackingCard({
               <Button
                 size="sm"
                 variant="outline"
+                {...buttonProps}
                 onClick={() => onCopyToClipboard(generateIssueTrackingADR(projectName, selectedIssueTrackingTool, issueTrackingTools))}
               >
                 Copy ADR
@@ -153,6 +160,7 @@ export function IssueTrackingCard({
                 <Button
                   size="sm"
                   variant="outline"
+                  {...buttonProps}
                   onClick={() => onCopyToClipboard(generateIssueTrackingVendorComparison(projectName, selectedIssueTrackingTool, issueTrackingTools))}
                 >
                   Copy Vendor Row
@@ -172,7 +180,6 @@ export function IssueTrackingCard({
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+    </CompletableCard>
   )
 }

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
-import { ExternalLink } from "lucide-react"
+import { ExternalLink, Lock, Unlock } from "lucide-react"
 import { dependencyTools, getAvailableDependencyTools, getDependencyToolDocumentationUrl, isDependencyToolNativeToPlatform } from "~/data/dependency-tools"
 import { generateDependencyADR } from "~/utils/adr-generators"
 import { generateDependencyVendorComparison } from "~/utils/vendor-utils"
@@ -13,6 +13,8 @@ interface DependencyManagementCardProps {
   selectedDepTool: string
   onDepToolChange: (toolId: string) => void
   onCopyToClipboard: (text: string) => void
+  isCompleted?: boolean
+  onToggleCompletion?: () => void
 }
 
 export function DependencyManagementCard({
@@ -20,7 +22,9 @@ export function DependencyManagementCard({
   selectedPlatform,
   selectedDepTool,
   onDepToolChange,
-  onCopyToClipboard
+  onCopyToClipboard,
+  isCompleted = false,
+  onToggleCompletion
 }: DependencyManagementCardProps) {
   const handleConfigureTool = () => {
     const url = getDependencyToolDocumentationUrl(selectedDepTool)
@@ -34,11 +38,36 @@ export function DependencyManagementCard({
   const selectedTool = dependencyTools.find(t => t.id === selectedDepTool)
 
   return (
-    <Card className="border-l-4 border-l-green-400">
+    <Card className={`border-l-4 border-l-green-400 ${isCompleted ? 'bg-gray-50 border-green-200' : ''}`}>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <span className="text-xl">{selectedTool?.emoji}</span>
           <span>Dependencies Management</span>
+          {onToggleCompletion && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleCompletion}
+              className={`ml-auto flex items-center gap-1 text-xs ${
+                isCompleted 
+                  ? 'text-green-600 hover:text-green-700' 
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
+              title={isCompleted ? 'Click to unlock and edit' : 'Mark as complete'}
+            >
+              {isCompleted ? (
+                <>
+                  <Lock className="h-3 w-3" />
+                  Complete
+                </>
+              ) : (
+                <>
+                  <Unlock className="h-3 w-3" />
+                  Mark Complete
+                </>
+              )}
+            </Button>
+          )}
         </CardTitle>
         <CardDescription>
           Manage your project dependencies and automate updates
@@ -49,7 +78,7 @@ export function DependencyManagementCard({
           <label htmlFor="dep-tool-select" className="text-sm font-medium">
             Dependency Tool
           </label>
-          <Select value={selectedDepTool} onValueChange={onDepToolChange}>
+          <Select value={selectedDepTool} onValueChange={onDepToolChange} disabled={isCompleted}>
             <SelectTrigger id="dep-tool-select">
               <SelectValue placeholder="Select a dependency tool" />
             </SelectTrigger>
@@ -108,7 +137,7 @@ export function DependencyManagementCard({
         <div className="flex flex-col sm:flex-row gap-2">
           <Button 
             className="flex items-center space-x-2"
-            disabled={!projectName.trim()}
+            disabled={!projectName.trim() || isCompleted}
             onClick={handleConfigureTool}
           >
             <span>{selectedTool?.emoji}</span>
@@ -125,6 +154,7 @@ export function DependencyManagementCard({
               <Button
                 size="sm"
                 variant="outline"
+                disabled={isCompleted}
                 onClick={() => onCopyToClipboard(generateDependencyADR(projectName, selectedDepTool, dependencyTools))}
               >
                 Copy ADR
@@ -145,6 +175,7 @@ export function DependencyManagementCard({
                 <Button
                   size="sm"
                   variant="outline"
+                  disabled={isCompleted}
                   onClick={() => onCopyToClipboard(generateDependencyVendorComparison(projectName, selectedDepTool, dependencyTools))}
                 >
                   Copy Vendor Row

@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
+import { CompletableCard } from "~/components/ui/completable-card"
 import { Button } from "~/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { Badge } from "~/components/ui/badge"
@@ -6,6 +6,7 @@ import { ExternalLink } from "lucide-react"
 import { getAvailableCloudPlatforms, getCloudPlatformById, hasMultipleProducts, getCloudPlatformProductsBySubcategory } from "~/data/cloud-platforms"
 import { generateADR } from "~/utils/adr-generators"
 import { generateVendorComparison } from "~/utils/vendor-utils"
+import { useCompletableInputs } from "~/hooks/use-completable-inputs"
 
 interface CloudPlatformCardProps {
   projectName: string
@@ -14,6 +15,8 @@ interface CloudPlatformCardProps {
   selectedPersonas: string[]
   onCloudPlatformChange: (platform: string) => void
   onCopyToClipboard: (text: string) => void
+  isCompleted?: boolean
+  onToggleCompletion?: () => void
 }
 
 export function CloudPlatformCard({
@@ -22,29 +25,32 @@ export function CloudPlatformCard({
   selectedArchitecture,
   selectedPersonas,
   onCloudPlatformChange,
-  onCopyToClipboard
+  onCopyToClipboard,
+  isCompleted = false,
+  onToggleCompletion
 }: CloudPlatformCardProps) {
   const availablePlatforms = getAvailableCloudPlatforms(selectedArchitecture, selectedPersonas)
   const selectedPlatform = getCloudPlatformById(selectedCloudPlatform)
+  const { selectProps, buttonProps } = useCompletableInputs({ 
+    isCompleted, 
+    baseDisabled: !projectName.trim() 
+  })
 
   return (
-    <Card className="border-l-4 border-l-purple-400">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span className="text-xl">{selectedPlatform?.emoji || '☁️'}</span>
-          <span>Cloud Platform</span>
-        </CardTitle>
-        <CardDescription>
-          Choose a cloud platform that supports your architecture and team needs
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <CompletableCard 
+      title="Cloud Platform"
+      description="Choose a cloud platform that supports your architecture and team needs"
+      emoji={selectedPlatform?.emoji || '☁️'}
+      isCompleted={isCompleted}
+      onToggleCompletion={onToggleCompletion}
+      borderColorClass="border-l-purple-400"
+    >
         <div className="space-y-2">
           <label htmlFor="cloud-platform-select" className="text-sm font-medium">
             Platform
           </label>
-          <Select value={selectedCloudPlatform} onValueChange={onCloudPlatformChange}>
-            <SelectTrigger id="cloud-platform-select">
+          <Select {...selectProps} value={selectedCloudPlatform} onValueChange={onCloudPlatformChange}>
+            <SelectTrigger id="cloud-platform-select" className={selectProps.className}>
               <SelectValue placeholder="Select a cloud platform" />
             </SelectTrigger>
             <SelectContent>
@@ -156,6 +162,7 @@ export function CloudPlatformCard({
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-2">
               <Button 
+                {...buttonProps}
                 className="flex items-center space-x-2"
                 onClick={() => window.open(selectedPlatform.url, '_blank')}
               >
@@ -171,6 +178,7 @@ export function CloudPlatformCard({
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium">📝 Architecture Decision Record</h4>
                   <Button
+                    {...buttonProps}
                     size="sm"
                     variant="outline"
                     onClick={() => onCopyToClipboard(generateADR(projectName, selectedCloudPlatform, availablePlatforms))}
@@ -190,6 +198,7 @@ export function CloudPlatformCard({
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium">📊 Vendor Entry</h4>
                   <Button
+                    {...buttonProps}
                     size="sm"
                     variant="outline"
                     onClick={() => onCopyToClipboard(generateVendorComparison(projectName, selectedCloudPlatform, availablePlatforms))}
@@ -204,7 +213,6 @@ export function CloudPlatformCard({
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+    </CompletableCard>
   )
 }

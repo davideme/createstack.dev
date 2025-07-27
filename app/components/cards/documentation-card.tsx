@@ -1,7 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { ExternalLink } from "lucide-react"
+import { CompletableCard } from "~/components/ui/completable-card"
+import { useCompletableInputs } from "~/hooks/use-completable-inputs"
 import { documentationTools, getAvailableDocumentationTools, getDocumentationToolUrl, isDocumentationToolNativeToPlatform } from "~/data/documentation-tools"
 import { generateDocumentationADR } from "~/utils/adr-generators"
 import { generateDocumentationVendorComparison } from "~/utils/vendor-utils"
@@ -13,6 +14,8 @@ interface DocumentationCardProps {
   selectedDocTool: string
   onDocToolChange: (toolId: string) => void
   onCopyToClipboard: (text: string) => void
+  isCompleted?: boolean
+  onToggleCompletion?: () => void
 }
 
 export function DocumentationCard({
@@ -20,37 +23,40 @@ export function DocumentationCard({
   selectedPlatform,
   selectedDocTool,
   onDocToolChange,
-  onCopyToClipboard
+  onCopyToClipboard,
+  isCompleted = false,
+  onToggleCompletion
 }: DocumentationCardProps) {
   const handleConfigureDocTool = () => {
     const url = getDocumentationToolUrl(selectedDocTool)
     if (url !== "#") {
       window.open(url, '_blank')
     } else {
-      alert("This documentation tool requires manual setup. Please refer to the tool's official documentation.")
+      alert("Please check the tool's documentation for setup instructions.")
     }
   }
 
   const selectedTool = documentationTools.find(t => t.id === selectedDocTool)
+  const { selectProps, buttonProps } = useCompletableInputs({ 
+    isCompleted, 
+    baseDisabled: !projectName.trim() 
+  })
 
   return (
-    <Card className="border-l-4 border-l-blue-400">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span className="text-xl">{selectedTool?.emoji}</span>
-          <span>Documentation</span>
-        </CardTitle>
-        <CardDescription>
-          Create and maintain project documentation
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <CompletableCard
+      title="Documentation"
+      description="Create and maintain project documentation"
+      emoji={selectedTool?.emoji}
+      isCompleted={isCompleted}
+      onToggleCompletion={onToggleCompletion}
+      borderColorClass="border-l-blue-400"
+    >
         <div className="space-y-2">
           <label htmlFor="doc-tool-select" className="text-sm font-medium">
             Documentation Tool
           </label>
-          <Select value={selectedDocTool} onValueChange={onDocToolChange}>
-            <SelectTrigger id="doc-tool-select">
+          <Select value={selectedDocTool} onValueChange={onDocToolChange} {...selectProps}>
+            <SelectTrigger id="doc-tool-select" className={selectProps.className}>
               <SelectValue placeholder="Select a documentation tool" />
             </SelectTrigger>
             <SelectContent>
@@ -113,7 +119,7 @@ export function DocumentationCard({
         <div className="flex flex-col sm:flex-row gap-2">
           <Button 
             className="flex items-center space-x-2"
-            disabled={!projectName.trim()}
+            {...buttonProps}
             onClick={handleConfigureDocTool}
           >
             <span>{selectedTool?.emoji}</span>
@@ -130,6 +136,7 @@ export function DocumentationCard({
               <Button
                 size="sm"
                 variant="outline"
+                {...buttonProps}
                 onClick={() => onCopyToClipboard(generateDocumentationADR(projectName, selectedDocTool, documentationTools))}
               >
                 Copy ADR
@@ -150,6 +157,7 @@ export function DocumentationCard({
                 <Button
                   size="sm"
                   variant="outline"
+                  {...buttonProps}
                   onClick={() => onCopyToClipboard(generateDocumentationVendorComparison(projectName, selectedDocTool, documentationTools))}
                 >
                   Copy Vendor Row
@@ -169,7 +177,6 @@ export function DocumentationCard({
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+    </CompletableCard>
   )
 }

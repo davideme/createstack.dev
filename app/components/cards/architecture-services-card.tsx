@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { CompletableCard } from "~/components/ui/completable-card";
 import { Badge } from "~/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { Architecture, ArchitectureService } from "~/data/project-types";
@@ -6,19 +6,28 @@ import type { CloudPlatformProduct } from "~/types/project";
 import { getServiceProductMapping } from "~/data/service-product-mappings";
 import { getCloudPlatformProducts } from "~/data/cloud-platforms";
 import { useState } from "react";
+import { useCompletableInputs } from "~/hooks/use-completable-inputs";
 
 interface ArchitectureServicesCardProps {
   architecture: Architecture;
   cloudPlatform: 'aws' | 'azure' | 'gcp';
   onServiceSelectionChange?: (selections: Record<string, string>) => void;
+  isCompleted?: boolean;
+  onToggleCompletion?: () => void;
 }
 
 export function ArchitectureServicesCard({ 
   architecture, 
   cloudPlatform, 
-  onServiceSelectionChange 
+  onServiceSelectionChange,
+  isCompleted = false,
+  onToggleCompletion
 }: ArchitectureServicesCardProps) {
   const [serviceSelections, setServiceSelections] = useState<Record<string, string>>({});
+  const { selectProps } = useCompletableInputs({ 
+    isCompleted, 
+    baseDisabled: false 
+  });
   
   // Get all products for the cloud platform as a flat array
   const cloudProductsGrouped = getCloudPlatformProducts(cloudPlatform);
@@ -53,19 +62,20 @@ export function ArchitectureServicesCard({
   const optionalServices = architecture.services.filter(s => !s.required);
 
   return (
-    <Card className="border-l-4 border-l-pink-400">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          🏗️ Architecture Services
-          <Badge variant="outline" className="ml-auto">
-            {architecture.name}
-          </Badge>
-        </CardTitle>
-        <CardDescription>
-          Infrastructure components needed for this architecture pattern
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <CompletableCard 
+      title="Architecture Services"
+      description="Infrastructure components needed for this architecture pattern"
+      emoji="🏗️"
+      isCompleted={isCompleted}
+      onToggleCompletion={onToggleCompletion}
+      borderColorClass="border-l-pink-400"
+    >
+      <div className="space-y-6">
+        {/* Add architecture name badge */}
+        <div className="flex items-center justify-between">
+          <Badge variant="outline">{architecture.name}</Badge>
+        </div>
+
         {/* Required Services */}
         <div>
           <h4 className="font-medium text-sm text-muted-foreground mb-3 flex items-center gap-2">
@@ -93,10 +103,11 @@ export function ArchitectureServicesCard({
                   {serviceProduct?.isDirectEquivalent && serviceProduct.product ? (
                     <div className="pt-2">
                       <Select 
+                        {...selectProps}
                         value={serviceSelections[service.name] || serviceProduct.product.id}
                         onValueChange={(value) => handleServiceSelection(service.name, value)}
                       >
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className={`h-8 ${selectProps.className}`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -183,10 +194,11 @@ export function ArchitectureServicesCard({
                     {serviceProduct?.isDirectEquivalent && serviceProduct.product ? (
                       <div className="pt-2">
                         <Select 
+                          {...selectProps}
                           value={serviceSelections[service.name] || ''}
                           onValueChange={(value) => handleServiceSelection(service.name, value)}
                         >
-                          <SelectTrigger className="h-8">
+                          <SelectTrigger className={`h-8 ${selectProps.className}`}>
                             <SelectValue placeholder="Select service (optional)" />
                           </SelectTrigger>
                           <SelectContent>
@@ -248,7 +260,7 @@ export function ArchitectureServicesCard({
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </CompletableCard>
   );
 }

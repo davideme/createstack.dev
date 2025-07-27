@@ -1,7 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { ExternalLink } from "lucide-react"
+import { CompletableCard } from "~/components/ui/completable-card"
+import { useCompletableInputs } from "~/hooks/use-completable-inputs"
 import { cicdTools, getAvailableCICDTools, getCICDToolDocumentationUrl, isCICDToolNativeToPlatform } from "~/data/ci-cd-tools"
 import { generateCICDADR } from "~/utils/adr-generators"
 import { generateCICDVendorComparison } from "~/utils/vendor-utils"
@@ -13,6 +14,8 @@ interface CICDCardProps {
   selectedCICDTool: string
   onCICDToolChange: (toolId: string) => void
   onCopyToClipboard: (text: string) => void
+  isCompleted?: boolean
+  onToggleCompletion?: () => void
 }
 
 export function CICDCard({
@@ -20,37 +23,40 @@ export function CICDCard({
   selectedPlatform,
   selectedCICDTool,
   onCICDToolChange,
-  onCopyToClipboard
+  onCopyToClipboard,
+  isCompleted = false,
+  onToggleCompletion
 }: CICDCardProps) {
   const handleConfigureCICDTool = () => {
     const url = getCICDToolDocumentationUrl(selectedCICDTool)
     if (url !== "#") {
       window.open(url, '_blank')
     } else {
-      alert("Manual CI/CD setup doesn't have specific documentation. Consider setting up deployment scripts or automation processes.")
+      alert("Please check the tool's documentation for setup instructions.")
     }
   }
 
   const selectedTool = cicdTools.find(t => t.id === selectedCICDTool)
+  const { selectProps, buttonProps } = useCompletableInputs({ 
+    isCompleted, 
+    baseDisabled: !projectName.trim() 
+  })
 
   return (
-    <Card className="border-l-4 border-l-orange-400">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span className="text-xl">{selectedTool?.emoji}</span>
-          <span>Continuous Integration</span>
-        </CardTitle>
-        <CardDescription>
-          Automate build, test, and deployment processes
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <CompletableCard
+      title="Continuous Integration"
+      description="Automate build, test, and deployment processes"
+      emoji={selectedTool?.emoji}
+      isCompleted={isCompleted}
+      onToggleCompletion={onToggleCompletion}
+      borderColorClass="border-l-orange-400"
+    >
         <div className="space-y-2">
           <label htmlFor="cicd-tool-select" className="text-sm font-medium">
             CI/CD Platform
           </label>
-          <Select value={selectedCICDTool} onValueChange={onCICDToolChange}>
-            <SelectTrigger id="cicd-tool-select">
+          <Select value={selectedCICDTool} onValueChange={onCICDToolChange} {...selectProps}>
+            <SelectTrigger id="cicd-tool-select" className={selectProps.className}>
               <SelectValue placeholder="Select a CI/CD platform" />
             </SelectTrigger>
             <SelectContent>
@@ -108,7 +114,7 @@ export function CICDCard({
         <div className="flex flex-col sm:flex-row gap-2">
           <Button 
             className="flex items-center space-x-2"
-            disabled={!projectName.trim()}
+            {...buttonProps}
             onClick={handleConfigureCICDTool}
           >
             <span>{selectedTool?.emoji}</span>
@@ -125,6 +131,7 @@ export function CICDCard({
               <Button
                 size="sm"
                 variant="outline"
+                {...buttonProps}
                 onClick={() => onCopyToClipboard(generateCICDADR(projectName, selectedCICDTool, cicdTools))}
               >
                 Copy ADR
@@ -145,6 +152,7 @@ export function CICDCard({
                 <Button
                   size="sm"
                   variant="outline"
+                  {...buttonProps}
                   onClick={() => onCopyToClipboard(generateCICDVendorComparison(projectName, selectedCICDTool, cicdTools))}
                 >
                   Copy Vendor Row
@@ -164,7 +172,6 @@ export function CICDCard({
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+    </CompletableCard>
   )
 }
