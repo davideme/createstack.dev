@@ -5,7 +5,7 @@ import { CompletableCard } from "~/components/ui/completable-card"
 import { useCompletableInputs } from "~/hooks/use-completable-inputs"
 import { documentationTools, getAvailableDocumentationTools, getDocumentationToolUrl, isDocumentationToolNativeToPlatform } from "~/data/documentation-tools"
 import { generateDocumentationADR } from "~/utils/adr-generators"
-import { generateDocumentationVendorComparison } from "~/utils/vendor-utils"
+import { generateDocumentationVendorComparison } from "~/utils/vendor"
 import { platforms } from "~/data/platforms"
 
 interface DocumentationCardProps {

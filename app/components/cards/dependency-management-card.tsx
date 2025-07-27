@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { ExternalLink, Lock, Unlock } from "lucide-react"
 import { dependencyTools, getAvailableDependencyTools, getDependencyToolDocumentationUrl, isDependencyToolNativeToPlatform } from "~/data/dependency-tools"
 import { generateDependencyADR } from "~/utils/adr-generators"
-import { generateDependencyVendorComparison } from "~/utils/vendor-utils"
+import { generateDependencyVendorComparison } from "~/utils/vendor"
 import { platforms } from "~/data/platforms"
 
 interface DependencyManagementCardProps {
