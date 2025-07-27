@@ -228,10 +228,11 @@ export function ProjectSetupCard({
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
+                size="icon"
+                className="h-6 w-6"
                 disabled={completedCards['project-setup']}
               >
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-3 w-3" />
               </Button>
             </CollapsibleTrigger>
           </div>
@@ -311,11 +312,11 @@ export function ProjectSetupCard({
               <div className="flex gap-2">
                 <CollapsibleTrigger asChild>
                   <Button
-                    size="sm"
-                    variant="outline"
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
                   >
-                    <span>Show</span>
-                    <ChevronDown className="h-4 w-4 ml-2" />
+                    <ChevronDown className="h-3 w-3" />
                   </Button>
                 </CollapsibleTrigger>
                 <Button

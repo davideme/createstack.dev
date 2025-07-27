@@ -11,7 +11,7 @@ const CollapsibleTrigger = React.forwardRef<
   <CollapsiblePrimitive.CollapsibleTrigger
     ref={ref}
     className={cn(
-      "flex w-full items-center justify-between py-2 text-sm font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180",
+      "transition-all [&[data-state=open]>*>svg]:rotate-180",
       className
     )}
     {...props}
