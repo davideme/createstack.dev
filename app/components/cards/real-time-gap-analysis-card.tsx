@@ -90,14 +90,34 @@ export function RealTimeGapAnalysisCard({ projectState, completedCards }: RealTi
     return (
       <Card className="bg-blue-50 border-blue-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-800">
-            <BarChart3 className="h-5 w-5" />
-            Start Your Gap Analysis
-          </CardTitle>
-          <CardDescription className="text-blue-600">
-            Complete the cards below to see your stack completeness score and get personalized recommendations
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-blue-800">
+                <BarChart3 className="h-5 w-5" />
+                Stack Completeness Analysis
+              </CardTitle>
+              <CardDescription className="text-blue-600">
+                Complete the cards below to improve your stack completeness score and get personalized recommendations
+              </CardDescription>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-red-600">
+                {completionPercentage}%
+              </div>
+              <div className="text-sm text-gray-600">
+                {completedCount}/{totalCards} cards completed
+              </div>
+            </div>
+          </div>
         </CardHeader>
+        <CardContent>
+          <Progress value={completionPercentage} className="h-3" />
+          <div className="mt-4">
+            <p className="text-sm text-gray-600">
+              Start by completing any of the cards below to see your progress and receive targeted recommendations.
+            </p>
+          </div>
+        </CardContent>
       </Card>
     );
   }
