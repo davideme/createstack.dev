@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
 import { Settings, Plus } from "lucide-react"
+import { useCurrentProject } from "~/lib/db"
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -18,6 +19,13 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children, title, description, headerActions }: AppLayoutProps) {
+  const { clearCurrentProject } = useCurrentProject()
+
+  const handleNewProject = async () => {
+    // Clear the current project data before navigating to new project
+    await clearCurrentProject()
+    window.location.href = '/'
+  }
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -36,15 +44,15 @@ export function AppLayout({ children, title, description, headerActions }: AppLa
               </div>
               
               <div className="flex items-center space-x-2">
-                {headerActions || (
-                  <Button 
-                    onClick={() => window.location.href = '/'}
-                    className="flex items-center space-x-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>New Project</span>
-                  </Button>
-                )}
+                {headerActions}
+                
+                <Button 
+                  onClick={handleNewProject}
+                  className="flex items-center space-x-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>New Project</span>
+                </Button>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
