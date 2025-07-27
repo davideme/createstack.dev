@@ -3,6 +3,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
+import { Checkbox } from "~/components/ui/checkbox";
 import { MermaidDiagram } from "~/components/ui/mermaid-diagram";
 import { CardCompletionToggle } from "~/components/ui/card-completion-toggle";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
@@ -239,19 +240,18 @@ export function ProjectSetupCard({
           <CollapsibleContent className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               {teamPersonas.map((persona) => (
-                <label key={persona.id} className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="checkbox"
+                <div key={persona.id} className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50">
+                  <Checkbox
                     checked={selectedPersonas.includes(persona.id)}
-                    onChange={() => handlePersonaToggle(persona.id)}
+                    onCheckedChange={() => handlePersonaToggle(persona.id)}
                     disabled={completedCards['project-setup']}
-                    className="rounded"
+                    id={`persona-${persona.id}`}
                   />
-                  <div className="flex-1">
+                  <label htmlFor={`persona-${persona.id}`} className="flex-1 cursor-pointer">
                     <div className="text-sm font-medium">{persona.name}</div>
                     <div className="text-xs text-gray-500">{persona.primaryFocus}</div>
-                  </div>
-                </label>
+                  </label>
+                </div>
               ))}
             </div>
           </CollapsibleContent>
