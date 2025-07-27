@@ -1,12 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { CompletableCard } from "~/components/ui/completable-card";
 import { Button } from "~/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { CardCompletionToggle } from "~/components/ui/card-completion-toggle";
 import { ExternalLink } from "lucide-react";
+import { useCompletableInputs } from "~/hooks/use-completable-inputs";
 
 import { platforms } from "~/data/platforms";
 import { generateADR } from "~/utils/adr-generators";
-import { generateVendorComparison } from "~/utils/vendor";
+import { generateVendorComparison } from "~/utils/vendor-utils";
 
 interface CodeHostingCardProps {
   projectName: string;
@@ -14,8 +14,8 @@ interface CodeHostingCardProps {
   onPlatformChange: (platform: string) => void;
   onCopyToClipboard: (text: string) => void;
   onCreateRepository: () => void;
-  isCompleted: boolean;
-  onToggleCompletion: () => void;
+  isCompleted?: boolean;
+  onToggleCompletion?: () => void;
 }
 
 export function CodeHostingCard({
@@ -24,34 +24,30 @@ export function CodeHostingCard({
   onPlatformChange,
   onCopyToClipboard,
   onCreateRepository,
-  isCompleted,
+  isCompleted = false,
   onToggleCompletion
 }: CodeHostingCardProps) {
+  const { selectProps, buttonProps } = useCompletableInputs({ 
+    isCompleted, 
+    baseDisabled: !projectName.trim() 
+  });
+
   return (
-    <Card className={`border-l-4 border-l-green-400 ${isCompleted ? 'bg-gray-50 border-green-200' : ''}`}>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-xl">{platforms.find(p => p.id === selectedPlatform)?.emoji}</span>
-            <span>Code Hosting</span>
-            <CardCompletionToggle
-              cardId="code-hosting"
-              isCompleted={isCompleted}
-              onToggle={onToggleCompletion}
-            />
-          </div>
-        </CardTitle>
-        <CardDescription>
-          Choose development tools considering budget, compliance requirements, and team productivity
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <CompletableCard 
+      title="Code Hosting"
+      description="Choose development tools considering budget, compliance requirements, and team productivity"
+      emoji={platforms.find(p => p.id === selectedPlatform)?.emoji || "🔧"}
+      isCompleted={isCompleted}
+      onToggleCompletion={onToggleCompletion}
+      borderColorClass="border-l-green-400"
+    >
+      <div className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="platform-select" className="text-sm font-medium">
             Platform
           </label>
-          <Select value={selectedPlatform} onValueChange={onPlatformChange} disabled={isCompleted}>
-            <SelectTrigger id="platform-select">
+          <Select value={selectedPlatform} onValueChange={onPlatformChange} {...selectProps}>
+            <SelectTrigger id="platform-select" className={selectProps.className}>
               <SelectValue placeholder="Select a platform" />
             </SelectTrigger>
             <SelectContent>
@@ -84,8 +80,8 @@ export function CodeHostingCard({
         <div className="flex flex-col sm:flex-row gap-2">
           <Button 
             className="flex items-center space-x-2"
-            disabled={!projectName.trim()}
             onClick={onCreateRepository}
+            {...buttonProps}
           >
             <span>{platforms.find(p => p.id === selectedPlatform)?.emoji}</span>
             <span>Create Repository</span>
@@ -130,7 +126,7 @@ export function CodeHostingCard({
             </p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </CompletableCard>
   );
 }
