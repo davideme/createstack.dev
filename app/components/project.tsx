@@ -78,7 +78,7 @@ import { generateArchitectureDiagram } from "~/utils/architecture-diagrams"
 
 export default function Project({ 
   projectStateRef, 
-  mode, 
+  mode = 'stack-builder', // Default to stack-builder mode
   onModeChange 
 }: { 
   projectStateRef?: React.MutableRefObject<any>;
@@ -88,18 +88,27 @@ export default function Project({
   // Check if we're in analysis context
   const analysisContext = useOptionalAnalysisContext()
   
+  // Define default values based on mode
+  const getDefaultValue = (buildModeDefault: string, analyzeDefault: string = "") => {
+    return mode === 'gap-analysis' ? analyzeDefault : buildModeDefault;
+  };
+  
   const [projectName, setProjectName] = useState("")
-  const [selectedPlatform, setSelectedPlatform] = useState("github")
-  const [selectedProjectType, setSelectedProjectType] = useState("web-app")
+  const [selectedPlatform, setSelectedPlatform] = useState(getDefaultValue("github"))
+  const [selectedProjectType, setSelectedProjectType] = useState(getDefaultValue("web-app"))
   const [selectedArchitecture, setSelectedArchitecture] = useState("")
-  const [selectedCloudPlatform, setSelectedCloudPlatform] = useState("aws")
-  const [selectedDepTool, setSelectedDepTool] = useState("dependabot")
-  const [selectedDocTool, setSelectedDocTool] = useState("readme")
-  const [selectedCICDTool, setSelectedCICDTool] = useState("github-actions")
-  const [selectedIssueTrackingTool, setSelectedIssueTrackingTool] = useState("github-issues")
-  const [selectedFeatureFlagTool, setSelectedFeatureFlagTool] = useState("configcat")
-  const [selectedPersonas, setSelectedPersonas] = useState<string[]>(["developer", "product-owner"])
-  const [selectedIndustry, setSelectedIndustry] = useState("none")
+  const [selectedCloudPlatform, setSelectedCloudPlatform] = useState(getDefaultValue("aws"))
+  const [selectedDepTool, setSelectedDepTool] = useState(getDefaultValue("dependabot"))
+  const [selectedDocTool, setSelectedDocTool] = useState(getDefaultValue("readme"))
+  const [selectedCICDTool, setSelectedCICDTool] = useState(getDefaultValue("github-actions"))
+  const [selectedIssueTrackingTool, setSelectedIssueTrackingTool] = useState(getDefaultValue("github-issues"))
+  const [selectedFeatureFlagTool, setSelectedFeatureFlagTool] = useState(getDefaultValue("configcat"))
+  const [selectedPersonas, setSelectedPersonas] = useState<string[]>(
+    mode === 'gap-analysis' ? [] : ["developer", "product-owner"]
+  )
+  const [selectedIndustry, setSelectedIndustry] = useState(
+    mode === 'gap-analysis' ? "" : "none"
+  )
   const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   
