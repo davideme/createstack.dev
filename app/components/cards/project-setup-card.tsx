@@ -5,7 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { Badge } from "~/components/ui/badge";
 import { MermaidDiagram } from "~/components/ui/mermaid-diagram";
 import { CardCompletionToggle } from "~/components/ui/card-completion-toggle";
-import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
+import { ChevronDown, ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 import { platforms } from "~/data/platforms";
@@ -57,8 +58,6 @@ export function ProjectSetupCard({
   onCreateRepository,
   onClearData
 }: ProjectSetupCardProps) {
-  const [showPersonas, setShowPersonas] = useState(false);
-  const [showArchitectureDiagram, setShowArchitectureDiagram] = useState(false);
 
   // Get available architectures for selected project type
   const availableArchitectures = getArchitecturesForProjectType(selectedProjectType);
@@ -222,20 +221,21 @@ export function ProjectSetupCard({
         )}
 
         {/* Team Personas */}
-        <div className="space-y-2">
+        <Collapsible className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Team Composition</label>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowPersonas(!showPersonas)}
-              disabled={completedCards['project-setup']}
-            >
-              {showPersonas ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
+            <CollapsibleTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={completedCards['project-setup']}
+              >
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </CollapsibleTrigger>
           </div>
-          {showPersonas && (
+          <CollapsibleContent className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               {teamPersonas.map((persona) => (
                 <label key={persona.id} className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50">
@@ -253,20 +253,20 @@ export function ProjectSetupCard({
                 </label>
               ))}
             </div>
-          )}
-          {selectedPersonas.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {selectedPersonas.map((personaId) => {
-                const persona = teamPersonas.find(p => p.id === personaId);
-                return persona ? (
-                  <Badge key={personaId} variant="secondary" className="text-xs">
-                    {persona.name}
-                  </Badge>
-                ) : null;
-              })}
-            </div>
-          )}
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
+        {selectedPersonas.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {selectedPersonas.map((personaId) => {
+              const persona = teamPersonas.find(p => p.id === personaId);
+              return persona ? (
+                <Badge key={personaId} variant="secondary" className="text-xs">
+                  {persona.name}
+                </Badge>
+              ) : null;
+            })}
+          </div>
+        )}
 
         {/* Industry Selection */}
         <div className="space-y-2">
@@ -305,17 +305,19 @@ export function ProjectSetupCard({
 
         {/* Architecture Diagram */}
         {selectedArchitecture && projectName.trim() && (
-          <div className="space-y-2 border-t pt-4">
+          <Collapsible className="space-y-2 border-t pt-4">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-medium">🏗️ Architecture Diagram</h4>
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowArchitectureDiagram(!showArchitectureDiagram)}
-                >
-                  {showArchitectureDiagram ? "Hide" : "Show"}
-                </Button>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                  >
+                    <span>Show</span>
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </CollapsibleTrigger>
                 <Button
                   size="sm"
                   variant="outline"
@@ -331,7 +333,7 @@ export function ProjectSetupCard({
                 </Button>
               </div>
             </div>
-            {showArchitectureDiagram && (
+            <CollapsibleContent>
               <div className="border rounded-lg p-4 bg-white">
                 <MermaidDiagram
                   id={`arch-${selectedArchitecture}`}
@@ -341,8 +343,8 @@ export function ProjectSetupCard({
                   })()}
                 />
               </div>
-            )}
-          </div>
+            </CollapsibleContent>
+          </Collapsible>
         )}
 
         {/* ADR Section */}
