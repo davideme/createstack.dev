@@ -152,7 +152,6 @@ export default function Project({
             selectedArchitecture={projectState.selectedArchitecture}
             selectedPersonas={projectState.selectedPersonas}
             selectedIndustry={projectState.selectedIndustry}
-            completedCards={projectState.completedCards}
             mode={mode}
             onProjectNameChange={projectState.setProjectName}
             onPlatformChange={projectState.setSelectedPlatform}
@@ -160,10 +159,11 @@ export default function Project({
             onArchitectureChange={projectState.setSelectedArchitecture}
             onPersonasChange={projectState.setSelectedPersonas}
             onIndustryChange={projectState.setSelectedIndustry}
-            onToggleCardCompletion={projectState.toggleCardCompletion}
             onCopyToClipboard={copyToClipboard}
             onCreateRepository={handleCreateRepository}
             onClearData={projectState.clearSavedData}
+            isCompleted={projectState.completedCards['project-setup']}
+            onToggleCompletion={() => projectState.toggleCardCompletion('project-setup')}
           />
 
           {/* PLAN PHASE - DevOps Lifecycle */}

@@ -1,11 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { CompletableCard } from "~/components/ui/completable-card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
 import { MermaidDiagram } from "~/components/ui/mermaid-diagram";
-import { CardCompletionToggle } from "~/components/ui/card-completion-toggle";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { useState } from "react";
@@ -15,8 +14,9 @@ import { projectTypes, getArchitecturesForProjectType, getArchitecture } from "~
 import { teamPersonas } from "~/data/personas";
 import { industries } from "~/data/industries";
 import { generateADR, generateArchitectureADR } from "~/utils/adr-generators";
-import { generateVendorComparison } from "~/utils/vendor";
+import { generateVendorComparison } from "~/utils/vendor-utils";
 import { generateArchitectureDiagram } from "~/utils/architecture-diagrams";
+import { useCompletableInputs } from "~/hooks/use-completable-inputs";
 
 interface ProjectSetupCardProps {
   projectName: string;
@@ -25,7 +25,6 @@ interface ProjectSetupCardProps {
   selectedArchitecture: string;
   selectedPersonas: string[];
   selectedIndustry: string;
-  completedCards: Record<string, boolean>;
   mode: 'gap-analysis' | 'stack-builder';
   onProjectNameChange: (name: string) => void;
   onPlatformChange: (platform: string) => void;
@@ -33,10 +32,11 @@ interface ProjectSetupCardProps {
   onArchitectureChange: (arch: string) => void;
   onPersonasChange: (personas: string[]) => void;
   onIndustryChange: (industry: string) => void;
-  onToggleCardCompletion: (cardId: string) => void;
   onCopyToClipboard: (text: string) => void;
   onCreateRepository: () => void;
   onClearData: () => void;
+  isCompleted?: boolean;
+  onToggleCompletion?: () => void;
 }
 
 export function ProjectSetupCard({
@@ -46,7 +46,6 @@ export function ProjectSetupCard({
   selectedArchitecture,
   selectedPersonas,
   selectedIndustry,
-  completedCards,
   mode,
   onProjectNameChange,
   onPlatformChange,
@@ -54,14 +53,21 @@ export function ProjectSetupCard({
   onArchitectureChange,
   onPersonasChange,
   onIndustryChange,
-  onToggleCardCompletion,
   onCopyToClipboard,
   onCreateRepository,
-  onClearData
+  onClearData,
+  isCompleted = false,
+  onToggleCompletion
 }: ProjectSetupCardProps) {
 
   // Get available architectures for selected project type
   const availableArchitectures = getArchitecturesForProjectType(selectedProjectType);
+
+  // Hook for handling completable inputs
+  const { selectProps, inputProps, buttonProps } = useCompletableInputs({ 
+    isCompleted, 
+    baseDisabled: false 
+  });
 
   // Mode configuration
   const modeConfig = {
@@ -111,24 +117,15 @@ export function ProjectSetupCard({
   };
 
   return (
-    <Card className={`border-l-4 ${mode === 'gap-analysis' ? 'border-l-blue-400' : 'border-l-green-400'} ${completedCards['project-setup'] ? 'bg-gray-50 border-green-200' : ''}`}>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-xl">📝</span>
-            <span>{currentContent.labels.projectSetupTitle}</span>
-            <CardCompletionToggle
-              cardId="project-setup"
-              isCompleted={completedCards['project-setup'] || false}
-              onToggle={onToggleCardCompletion}
-            />
-          </div>
-        </CardTitle>
-        <CardDescription>
-          {currentContent.labels.projectSetupDesc}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <CompletableCard 
+      title={currentContent.labels.projectSetupTitle}
+      description={currentContent.labels.projectSetupDesc}
+      emoji="📝"
+      isCompleted={isCompleted}
+      onToggleCompletion={onToggleCompletion}
+      borderColorClass={mode === 'gap-analysis' ? 'border-l-blue-400' : 'border-l-green-400'}
+    >
+      <div className="space-y-4">
         {/* Project Name */}
         <div className="space-y-2">
           <label htmlFor="project-name" className="text-sm font-medium">
@@ -139,7 +136,7 @@ export function ProjectSetupCard({
             value={projectName}
             onChange={(e) => onProjectNameChange(e.target.value)}
             placeholder={currentContent.labels.projectNamePlaceholder}
-            disabled={completedCards['project-setup']}
+            {...inputProps}
           />
         </div>
 
@@ -148,8 +145,8 @@ export function ProjectSetupCard({
           <label htmlFor="project-type" className="text-sm font-medium">
             Project Type
           </label>
-          <Select value={selectedProjectType} onValueChange={onProjectTypeChange} disabled={completedCards['project-setup']}>
-            <SelectTrigger id="project-type">
+          <Select value={selectedProjectType} onValueChange={onProjectTypeChange} {...selectProps}>
+            <SelectTrigger id="project-type" className={selectProps.className}>
               <SelectValue placeholder="Select project type" />
             </SelectTrigger>
             <SelectContent>
@@ -188,8 +185,8 @@ export function ProjectSetupCard({
             <label htmlFor="architecture" className="text-sm font-medium">
               Architecture Pattern
             </label>
-            <Select value={selectedArchitecture} onValueChange={onArchitectureChange} disabled={completedCards['project-setup']}>
-              <SelectTrigger id="architecture">
+            <Select value={selectedArchitecture} onValueChange={onArchitectureChange} {...selectProps}>
+              <SelectTrigger id="architecture" className={selectProps.className}>
                 <SelectValue placeholder="Select architecture pattern" />
               </SelectTrigger>
               <SelectContent>
@@ -231,7 +228,7 @@ export function ProjectSetupCard({
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
-                disabled={completedCards['project-setup']}
+                {...buttonProps}
               >
                 <ChevronDown className="h-3 w-3" />
               </Button>
@@ -244,7 +241,7 @@ export function ProjectSetupCard({
                   <Checkbox
                     checked={selectedPersonas.includes(persona.id)}
                     onCheckedChange={() => handlePersonaToggle(persona.id)}
-                    disabled={completedCards['project-setup']}
+                    {...buttonProps}
                     id={`persona-${persona.id}`}
                   />
                   <label htmlFor={`persona-${persona.id}`} className="flex-1 cursor-pointer">
@@ -274,8 +271,8 @@ export function ProjectSetupCard({
           <label htmlFor="industry" className="text-sm font-medium">
             Industry
           </label>
-          <Select value={selectedIndustry} onValueChange={onIndustryChange} disabled={completedCards['project-setup']}>
-            <SelectTrigger id="industry">
+          <Select value={selectedIndustry} onValueChange={onIndustryChange} {...selectProps}>
+            <SelectTrigger id="industry" className={selectProps.className}>
               <SelectValue placeholder="Select your industry" />
             </SelectTrigger>
             <SelectContent>
@@ -385,7 +382,7 @@ export function ProjectSetupCard({
             </p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </CompletableCard>
   );
 }
