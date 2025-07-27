@@ -579,7 +579,7 @@ export default function Project({
 
   // Create header actions for mode switching
   const headerActions = onModeChange ? (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
       <ModeSwitch mode={mode} onModeChange={onModeChange} />
       <div className="flex items-center space-x-3">
         <SavingIndicator isSaving={isSaving} />
