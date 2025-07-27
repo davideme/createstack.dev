@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Progress } from "~/components/ui/progress";
-import { BarChart3, TrendingUp, AlertTriangle, Info, CheckCircle, ChevronDown, ChevronRight, GitBranch, Code, Package, TestTube, Rocket, Upload, Settings, Activity } from "lucide-react";
+import { Infinity, BarChart3, TrendingUp, AlertTriangle, Info, CheckCircle, ChevronDown, ChevronRight, GitBranch, Code, Package, TestTube, Rocket, Upload, Settings, Activity } from "lucide-react";
 import { useState } from "react";
 
 interface RealTimeGapAnalysisCardProps {
@@ -234,7 +234,7 @@ export function RealTimeGapAnalysisCard({ projectState, completedCards }: RealTi
             className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
           >
             <h4 className="flex items-center gap-2 text-sm font-medium">
-              <Activity className="h-4 w-4 text-blue-500" />
+              <Infinity className="h-4 w-4 text-blue-500" />
               DevOps Phases Breakdown
             </h4>
             {isPhaseBreakdownOpen ? (
