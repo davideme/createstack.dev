@@ -167,6 +167,21 @@ export function useProjectState({ mode }: UseProjectStateOptions) {
     }
   }, [projectName, selectedPlatform, selectedProjectType, selectedArchitecture, selectedCloudPlatform, selectedDepTool, selectedDocTool, selectedCICDTool, selectedIssueTrackingTool, selectedFeatureFlagTool, selectedPersonas, selectedIndustry, isReady])
 
+  // Auto-complete code-hosting card when platform is selected
+  useEffect(() => {
+    if (selectedPlatform) {
+      setCompletedCards(prev => ({
+        ...prev,
+        'code-hosting': true
+      }))
+    } else {
+      setCompletedCards(prev => ({
+        ...prev,
+        'code-hosting': false
+      }))
+    }
+  }, [selectedPlatform])
+
   return {
     // State
     projectName,

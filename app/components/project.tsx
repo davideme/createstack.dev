@@ -4,6 +4,7 @@ import { SavingIndicator } from "~/components/ui/saving-indicator";
 import { ModeSwitch } from "~/components/ui/mode-switch";
 import { RealTimeGapAnalysisCard } from "~/components/cards/real-time-gap-analysis-card";
 import { ProjectSetupCard } from "~/components/cards/project-setup-card";
+import { CodeHostingCard } from "~/components/cards/code-hosting-card";
 import { DependencyManagementCard } from "~/components/cards/dependency-management-card";
 import { DocumentationCard } from "~/components/cards/documentation-card";
 import { CICDCard } from "~/components/cards/cicd-card";
@@ -187,6 +188,18 @@ export default function Project({
             onCopyToClipboard={copyToClipboard}
             isCompleted={projectState.completedCards['issue-tracking']}
             onToggleCompletion={() => projectState.toggleCardCompletion('issue-tracking')}
+          />
+
+          {/* CODE PHASE - DevOps Lifecycle */}
+          {/* Code Hosting Card - CODE: Version control and collaboration */}
+          <CodeHostingCard
+            projectName={projectState.projectName}
+            selectedPlatform={projectState.selectedPlatform}
+            onPlatformChange={projectState.setSelectedPlatform}
+            onCopyToClipboard={copyToClipboard}
+            onCreateRepository={handleCreateRepository}
+            isCompleted={projectState.completedCards['code-hosting']}
+            onToggleCompletion={() => projectState.toggleCardCompletion('code-hosting')}
           />
 
           {/* Dependencies Management Card - CODE: Package management */}
