@@ -1,7 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Progress } from "~/components/ui/progress";
-import { BarChart3, TrendingUp, AlertTriangle, Info, CheckCircle } from "lucide-react";
+import { BarChart3, TrendingUp, AlertTriangle, Info, CheckCircle, ChevronDown, ChevronRight, GitBranch, Code, Package, TestTube, Rocket, Upload, Settings, Activity } from "lucide-react";
+import { useState } from "react";
 
 interface RealTimeGapAnalysisCardProps {
   projectState: any;
@@ -9,10 +10,81 @@ interface RealTimeGapAnalysisCardProps {
 }
 
 export function RealTimeGapAnalysisCard({ projectState, completedCards }: RealTimeGapAnalysisCardProps) {
+  const [isPhaseBreakdownOpen, setIsPhaseBreakdownOpen] = useState(false);
+
   // Calculate completeness based on completed cards
   const totalCards = Object.keys(completedCards).length;
   const completedCount = Object.values(completedCards).filter(Boolean).length;
   const completionPercentage = totalCards > 0 ? Math.round((completedCount / totalCards) * 100) : 0;
+
+  // DevOps phases mapping
+  const devOpsPhases = {
+    plan: {
+      name: 'Plan',
+      icon: GitBranch,
+      cards: ['issue-tracking', 'documentation'],
+      color: 'blue'
+    },
+    code: {
+      name: 'Code',
+      icon: Code,
+      cards: ['code-hosting', 'dependency-management'],
+      color: 'green'
+    },
+    build: {
+      name: 'Build',
+      icon: Package,
+      cards: ['cicd'],
+      color: 'orange'
+    },
+    test: {
+      name: 'Test',
+      icon: TestTube,
+      cards: ['cicd'],
+      color: 'purple'
+    },
+    release: {
+      name: 'Release',
+      icon: Rocket,
+      cards: ['cicd', 'feature-flags'],
+      color: 'pink'
+    },
+    deploy: {
+      name: 'Deploy',
+      icon: Upload,
+      cards: ['cicd', 'cloud-platform'],
+      color: 'indigo'
+    },
+    operate: {
+      name: 'Operate',
+      icon: Settings,
+      cards: ['architecture-services', 'cloud-platform'],
+      color: 'cyan'
+    },
+    monitor: {
+      name: 'Monitor',
+      icon: Activity,
+      cards: [],
+      color: 'red'
+    }
+  };
+
+  // Calculate phase completeness
+  const phaseCompleteness = Object.entries(devOpsPhases).map(([phaseKey, phase]) => {
+    const phaseCards = phase.cards;
+    const completedInPhase = phaseCards.filter(cardId => completedCards[cardId]).length;
+    const totalInPhase = phaseCards.length;
+    const percentage = totalInPhase > 0 ? Math.round((completedInPhase / totalInPhase) * 100) : 0;
+    
+    return {
+      key: phaseKey,
+      ...phase,
+      completedCards: completedInPhase,
+      totalCards: totalInPhase,
+      percentage,
+      status: percentage === 100 ? 'complete' : percentage > 0 ? 'partial' : 'incomplete'
+    };
+  });
 
   // Get incomplete cards
   const incompleteCategories = Object.entries(completedCards)
@@ -154,6 +226,77 @@ export function RealTimeGapAnalysisCard({ projectState, completedCards }: RealTi
       </CardHeader>
       <CardContent className="space-y-4">
         <Progress value={completionPercentage} className="h-3" />
+        
+        {/* DevOps Phases Breakdown */}
+        <div className="border rounded-lg">
+          <button
+            onClick={() => setIsPhaseBreakdownOpen(!isPhaseBreakdownOpen)}
+            className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+          >
+            <h4 className="flex items-center gap-2 text-sm font-medium">
+              <Activity className="h-4 w-4 text-blue-500" />
+              DevOps Phases Breakdown
+            </h4>
+            {isPhaseBreakdownOpen ? (
+              <ChevronDown className="h-4 w-4 text-gray-500" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-gray-500" />
+            )}
+          </button>
+          
+          {isPhaseBreakdownOpen && (
+            <div className="border-t p-3 space-y-3">
+              {phaseCompleteness.map((phase) => {
+                const Icon = phase.icon;
+                const getIconColorClass = (color: string) => {
+                  const colorMap: Record<string, string> = {
+                    blue: 'text-blue-500',
+                    green: 'text-green-500',
+                    orange: 'text-orange-500',
+                    purple: 'text-purple-500',
+                    pink: 'text-pink-500',
+                    indigo: 'text-indigo-500',
+                    cyan: 'text-cyan-500',
+                    red: 'text-red-500'
+                  };
+                  return colorMap[color] || 'text-gray-500';
+                };
+                
+                return (
+                  <div key={phase.key} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
+                    <Icon className={`h-4 w-4 ${getIconColorClass(phase.color)}`} />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium">{phase.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-600">
+                            {phase.completedCards}/{phase.totalCards}
+                          </span>
+                          <Badge
+                            variant={phase.status === 'complete' ? 'default' : 
+                                   phase.status === 'partial' ? 'secondary' : 'outline'}
+                            className="text-xs"
+                          >
+                            {phase.percentage}%
+                          </Badge>
+                        </div>
+                      </div>
+                      {phase.totalCards > 0 && (
+                        <Progress 
+                          value={phase.percentage} 
+                          className="h-1.5"
+                        />
+                      )}
+                      {phase.totalCards === 0 && (
+                        <div className="text-xs text-gray-400">No cards available</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
         
         {/* Incomplete Cards - Real-time */}
         {recommendations.length > 0 && (
