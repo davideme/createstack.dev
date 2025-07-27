@@ -18,3 +18,8 @@ DRY (Don't Repeat Yourself)
 Single Responsibility Principle
 Composition over Inheritance
 Reusability & Maintainability
+
+### UX Guidelines
+ - Use consistent UX patterns across the application.
+ - Use radix components for UI elements before custom components.
+ - Use Tailwind CSS for styling.
