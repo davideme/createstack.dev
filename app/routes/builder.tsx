@@ -1,6 +1,5 @@
 import type { Route } from "./+types/builder";
 import Project from "../components/project";
-import { AppLayout } from "../components/shared/app-layout";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,12 +9,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Builder() {
-  return (
-    <AppLayout 
-      title="Technology Stack Builder"
-      description="Build a comprehensive technology stack from scratch with guided recommendations"
-    >
-      <Project />
-    </AppLayout>
-  );
+  return <Project mode="stack-builder" />;
 }

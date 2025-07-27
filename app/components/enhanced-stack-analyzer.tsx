@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Progress } from "~/components/ui/progress";
+import { ModeSwitch } from "~/components/ui/mode-switch";
 import { 
   Search, 
   Plus, 
@@ -17,50 +18,6 @@ import {
 
 // Existing components
 import Project from "~/components/project";
-
-interface StackModeToggleProps {
-  mode: 'gap-analysis' | 'stack-builder';
-  onModeChange: (mode: 'gap-analysis' | 'stack-builder') => void;
-}
-
-function StackModeToggle({ mode, onModeChange }: StackModeToggleProps) {
-  return (
-    <Card className="mb-6">
-      <CardContent className="pt-6">
-        <Tabs value={mode} onValueChange={onModeChange as any}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="gap-analysis" className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              Analyze Existing Stack
-            </TabsTrigger>
-            <TabsTrigger value="stack-builder" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Build New Stack
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-        
-        <div className="mt-4 text-center">
-          {mode === 'gap-analysis' ? (
-            <div className="space-y-2">
-              <h3 className="font-semibold text-blue-600">Gap Analysis Mode</h3>
-              <p className="text-sm text-gray-600">
-                Input your existing technologies to identify missing components and strengthen your stack
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <h3 className="font-semibold text-green-600">Stack Builder Mode</h3>
-              <p className="text-sm text-gray-600">
-                Build a comprehensive technology stack from scratch with guided recommendations
-              </p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 interface GapAnalysisLandingProps {
   onStartAnalysis: () => void;
@@ -325,16 +282,16 @@ export function EnhancedStackAnalyzer() {
 
   if (mode === 'stack-builder') {
     return (
-      <div>
-        <StackModeToggle mode={mode} onModeChange={setMode} />
-        <Project />
+      <div className="space-y-6">
+        <ModeSwitch mode={mode} onModeChange={setMode} />
+        <Project mode={mode} onModeChange={setMode} />
       </div>
     );
   }
 
   return (
-    <div>
-      <StackModeToggle mode={mode} onModeChange={setMode} />
+    <div className="space-y-6">
+      <ModeSwitch mode={mode} onModeChange={setMode} />
       
       {showLanding && (
         <GapAnalysisLanding onStartAnalysis={handleStartAnalysis} />
@@ -366,7 +323,7 @@ export function EnhancedStackAnalyzer() {
               </div>
             </CardContent>
           </Card>
-          <Project />
+          <Project mode={mode} onModeChange={setMode} />
         </div>
       )}
       

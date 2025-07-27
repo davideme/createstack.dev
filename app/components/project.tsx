@@ -6,6 +6,7 @@ import { Badge } from "~/components/ui/badge"
 import { Progress } from "~/components/ui/progress"
 import { SavingIndicator } from "~/components/ui/saving-indicator"
 import { MermaidDiagram } from "~/components/ui/mermaid-diagram"
+import { ModeSwitch } from "~/components/ui/mode-switch"
 import { AppLayout } from "~/components/shared/app-layout"
 import { InfrastructureAsCode } from "~/components/shared/infrastructure-as-code"
 import { DependencyManagementCard } from "~/components/cards/dependency-management-card"
@@ -277,6 +278,44 @@ export default function Project({
   const getDefaultValue = (buildModeDefault: string, analyzeDefault: string = "") => {
     return mode === 'gap-analysis' ? analyzeDefault : buildModeDefault;
   };
+
+  // Mode-specific configurations
+  const modeConfig = {
+    'gap-analysis': {
+      theme: {
+        primary: 'blue',
+        accent: 'amber',
+        cardBorder: 'border-blue-200',
+        completedBg: 'bg-blue-50'
+      },
+      labels: {
+        projectSetupTitle: "Current Stack Setup",
+        projectSetupDesc: "Enter your existing technologies below to see what's missing from your stack",
+        projectNameLabel: "Project/Product Name",
+        projectNamePlaceholder: "Enter your current project name...",
+        actionButton: "Analyze Stack Gaps",
+        modeDescription: "Analyze & Improve"
+      }
+    },
+    'stack-builder': {
+      theme: {
+        primary: 'green',
+        accent: 'blue', 
+        cardBorder: 'border-green-200',
+        completedBg: 'bg-green-50'
+      },
+      labels: {
+        projectSetupTitle: "Project Setup",
+        projectSetupDesc: "Define your project name and team composition to get personalized tool recommendations",
+        projectNameLabel: "Project Name",
+        projectNamePlaceholder: "Enter your project name...",
+        actionButton: "Create Repository",
+        modeDescription: "Plan & Build"
+      }
+    }
+  };
+
+  const currentModeConfig = modeConfig[mode];
   
   const [projectName, setProjectName] = useState("")
   const [selectedPlatform, setSelectedPlatform] = useState(getDefaultValue("github"))
@@ -540,28 +579,38 @@ export default function Project({
 
   // Create header actions for mode switching
   const headerActions = onModeChange ? (
-    <div className="flex gap-2">
-      <Button
-        variant={mode === 'gap-analysis' ? 'default' : 'outline'}
-        onClick={() => onModeChange('gap-analysis')}
-        className="flex items-center gap-2"
-        size="sm"
-      >
-        <Search className="h-4 w-4" />
-        Analyze Existing Stack
-      </Button>
-      <Button
-        variant={mode === 'stack-builder' ? 'default' : 'outline'}
-        onClick={() => onModeChange('stack-builder')}
-        className="flex items-center gap-2"
-        size="sm"
-      >
-        <Plus className="h-4 w-4" />
-        Build New Stack
-      </Button>
+    <div className="flex items-center gap-4">
+      <ModeSwitch mode={mode} onModeChange={onModeChange} />
+      <div className="flex items-center space-x-3">
+        <SavingIndicator isSaving={isSaving} />
+        <Button 
+          variant="default"
+          onClick={clearSavedData}
+          className="flex items-center space-x-2"
+          disabled={!isReady}
+        >
+          <span>+</span>
+          <span>New Project Plan</span>
+        </Button>
+      </div>
     </div>
   ) : clearSavedDataAction;
 
+  // Mode-specific content configuration
+  const modeContent = {
+    'gap-analysis': {
+      title: "Stack Gap Analysis",
+      description: "Analyze your existing technology stack to identify gaps and get targeted recommendations for improvement.",
+      subtitle: "Identify what's missing and strengthen your current setup"
+    },
+    'stack-builder': {
+      title: "Technology Stack Planning", 
+      description: "Build business-aligned technology choices with clear rationale for stakeholders across teams.",
+      subtitle: "Plan your ideal technology stack from the ground up"
+    }
+  };
+
+  const currentContent = modeContent[mode];
   const currentMode = mode || analysisContext?.mode;
 
   if (error) {
@@ -593,20 +642,44 @@ export default function Project({
 
   return (
     <AppLayout 
-      title={currentMode === 'gap-analysis' ? "Stack Gap Analysis" : "Technology Stack Planning"}
-      description={currentMode === 'gap-analysis' 
-        ? "Analyze your existing technology stack to identify gaps and get targeted recommendations."
-        : "Build business-aligned technology choices with clear rationale for stakeholders across teams."
-      }
+      title={currentContent.title}
+      description={currentContent.description}
       headerActions={headerActions}
     >
+      {/* Mode Indicator Banner */}
+      <div className={`mb-6 p-4 rounded-lg border-l-4 ${
+        mode === 'gap-analysis' 
+          ? 'bg-blue-50 border-l-blue-500 border-blue-200' 
+          : 'bg-green-50 border-l-green-500 border-green-200'
+      }`}>
+        <div className="flex items-center gap-3">
+          {mode === 'gap-analysis' ? (
+            <Search className="h-5 w-5 text-blue-600" />
+          ) : (
+            <Plus className="h-5 w-5 text-green-600" />
+          )}
+          <div>
+            <h3 className={`font-semibold ${
+              mode === 'gap-analysis' ? 'text-blue-800' : 'text-green-800'
+            }`}>
+              {mode === 'gap-analysis' ? 'Gap Analysis Mode' : 'Stack Builder Mode'}
+            </h3>
+            <p className={`text-sm ${
+              mode === 'gap-analysis' ? 'text-blue-700' : 'text-green-700'
+            }`}>
+              {currentContent.subtitle}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Project Setup Card */}
-        <Card className={completedCards['project-setup'] ? 'bg-gray-50 border-green-200' : ''}>
+        <Card className={`${completedCards['project-setup'] ? `${currentModeConfig.theme.completedBg} ${currentModeConfig.theme.cardBorder}` : ''}`}>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <span className="text-xl">🚀</span>
-              <span>{currentMode === 'gap-analysis' ? "Current Stack Setup" : "Project Setup"}</span>
+              <span>{currentModeConfig.labels.projectSetupTitle}</span>
               <CardCompletionToggle
                 cardId="project-setup"
                 isCompleted={completedCards['project-setup']}
@@ -614,20 +687,17 @@ export default function Project({
               />
             </CardTitle>
             <CardDescription>
-              {analysisContext?.mode === 'gap-analysis' 
-                ? "Enter your existing technologies below to see what's missing from your stack"
-                : "Define your project name and team composition to get personalized tool recommendations"
-              }
+              {currentModeConfig.labels.projectSetupDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="project-name" className="text-sm font-medium">
-                Project Name
+                {currentModeConfig.labels.projectNameLabel}
               </label>
               <Input
                 id="project-name"
-                placeholder="Enter your project name..."
+                placeholder={currentModeConfig.labels.projectNamePlaceholder}
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 className="w-full"
@@ -639,7 +709,10 @@ export default function Project({
             <div className="space-y-2">
               <label className="text-sm font-medium">Team Personas</label>
               <p className="text-xs text-muted-foreground">
-                Select the roles working on this project to get personalized tool recommendations
+                {mode === 'gap-analysis' 
+                  ? "Select the roles currently working on this project to get targeted gap analysis"
+                  : "Select the roles working on this project to get personalized tool recommendations"
+                }
               </p>
               <div className="flex flex-wrap gap-2">
                 {teamPersonas.map((persona) => {
@@ -690,7 +763,10 @@ export default function Project({
                 Industry (Optional)
               </label>
               <p className="text-xs text-muted-foreground">
-                Select your industry for domain-specific recommendations, or skip for general recommendations
+                {mode === 'gap-analysis' 
+                  ? "Select your industry to get domain-specific gap analysis and compliance considerations"
+                  : "Select your industry for domain-specific recommendations, or skip for general recommendations"
+                }
               </p>
               <Select value={selectedIndustry} onValueChange={setSelectedIndustry} disabled={completedCards['project-setup']}>
                 <SelectTrigger id="industry-select">
@@ -733,13 +809,24 @@ export default function Project({
 
             {/* Project Status */}
             {projectName.trim() && selectedPersonas.length > 0 && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm font-medium text-green-800 mb-1">
-                  ✅ Project Ready
+              <div className={`p-3 border rounded-lg ${
+                mode === 'gap-analysis' 
+                  ? 'bg-blue-50 border-blue-200' 
+                  : 'bg-green-50 border-green-200'
+              }`}>
+                <p className={`text-sm font-medium mb-1 ${
+                  mode === 'gap-analysis' ? 'text-blue-800' : 'text-green-800'
+                }`}>
+                  ✅ {mode === 'gap-analysis' ? 'Ready for Analysis' : 'Project Ready'}
                 </p>
-                <p className="text-xs text-green-700">
+                <p className={`text-xs ${
+                  mode === 'gap-analysis' ? 'text-blue-700' : 'text-green-700'
+                }`}>
                   <strong>{projectName}</strong> is configured for a team with {selectedPersonas.length} persona{selectedPersonas.length > 1 ? 's' : ''}{selectedIndustry && selectedIndustry !== "none" ? ` in the ${industries.find(i => i.id === selectedIndustry)?.name} industry` : ' with general recommendations'}. 
-                  Tool recommendations will be tailored to your team composition{selectedIndustry && selectedIndustry !== "none" ? ' and industry focus' : ''}.
+                  {mode === 'gap-analysis' 
+                    ? ' Fill in your existing technologies below to see what gaps exist in your current stack.'
+                    : ' Tool recommendations will be tailored to your team composition'
+                  }{selectedIndustry && selectedIndustry !== "none" ? ' and industry focus' : ''}.
                 </p>
               </div>
             )}
